@@ -1,0 +1,77 @@
+[project]
+name = "apholo-egnn"
+version = "0.1.0"
+description = "apholo-EGNN binding-site predictor, inference only"
+requires-python = ">=3.10"
+
+dependencies = [
+    "torch-geometric==2.5.3",
+    "numpy",
+    "scipy",
+    "safetensors>=0.4.0",
+    "fair-esm>=2.0.0",
+    "biopython>=1.81",
+]
+
+[project.optional-dependencies]
+cpu = [
+    "torch==2.11.*",
+    "torch-cluster==1.6.3",
+]
+
+cu130 = [
+    "torch==2.11.*",
+    "torch-cluster==1.6.3",
+]
+
+dev = [
+    "pytest",
+    "pytest-cov",
+]
+
+[tool.uv]
+conflicts = [
+    [
+        { extra = "cpu" },
+        { extra = "cu130" },
+    ],
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu130", extra = "cu130" },
+]
+
+torch-cluster = [
+    { index = "pyg-cpu", extra = "cpu" },
+    { index = "pyg-cu130", extra = "cu130" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[[tool.uv.index]]
+name = "pyg-cpu"
+url = "https://data.pyg.org/whl/torch-2.11.0+cpu.html"
+format = "flat"
+explicit = true
+
+[[tool.uv.index]]
+name = "pyg-cu130"
+url = "https://data.pyg.org/whl/torch-2.11.0+cu130.html"
+format = "flat"
+explicit = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[[tool.hatch.build.targets.wheel]]
+packages = ["src/apholo_egnn"]
