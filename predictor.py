@@ -16,8 +16,11 @@ from apholo_egnn.data.graph import build_graph
 from apholo_egnn.model.vnegnn import VNEGNN
 from apholo_egnn.utils.grid import sample_fibonacci_grid
 
-_HF_REPO_ID  = "apholo/vnegnn"      # TODO: update once uploaded
-_HF_FILENAME = "model.safetensors"  # TODO: update once uploaded
+# TODO: uncomment once uploaded to HuggingFace
+# _HF_REPO_ID  = "apholo/vnegnn"
+# _HF_FILENAME = "model.safetensors"
+
+_LOCAL_CHECKPOINT = Path("/home/sagemaker-user/git/apholo-egnn/model.safetensors")
 
 _ESM_MODEL_NAME = "esm2_t36_3B_UR50D"
 _ESM_REPR_LAYER = 36
@@ -102,7 +105,9 @@ class VNEGNNPredictor:
         self.device      = torch.device(device)
         self._esm_device = torch.device(device)
 
-        checkpoint_path = hf_hub_download(repo_id=_HF_REPO_ID, filename=_HF_FILENAME)
+        # TODO: replace with hf_hub_download once uploaded to HuggingFace
+        # checkpoint_path = hf_hub_download(repo_id=_HF_REPO_ID, filename=_HF_FILENAME)
+        checkpoint_path = _LOCAL_CHECKPOINT
         model = VNEGNN(**_VNEGNN_KWARGS)
         state_dict = load_file(checkpoint_path, device="cpu")
         model.load_state_dict(state_dict)

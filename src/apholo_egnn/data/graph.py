@@ -11,6 +11,7 @@ from apholo_egnn.utils.grid import sample_fibonacci_grid
 
 
 def _res_to_one_hot(res_names: np.ndarray) -> Tensor:
+    """ Creates a one hot tensor from residue's name"""
     ids = np.array([RES_IDS.get(r, RES_IDS["X"]) for r in res_names.tolist()])
     return F.one_hot(torch.from_numpy(ids), num_classes=len(RES_IDS)).float()
 
