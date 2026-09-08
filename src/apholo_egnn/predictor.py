@@ -15,15 +15,10 @@ from torch_geometric.nn import MeanAggregation
 from apholo_egnn.data.graph import build_graph
 from apholo_egnn.model.vnegnn import VNEGNN
 from apholo_egnn.utils.grid import sample_fibonacci_grid
+from apholo_egnn.utils.hub import download_from_pretrained
 from apholo_egnn.utils.pdb import parse_structure
 
 logger = logging.getLogger(__name__)
-
-# TODO: uncomment once uploaded to HuggingFace
-# _HF_REPO_ID  = "apholo/vnegnn"
-# _HF_FILENAME = "model.safetensors"
-
-_LOCAL_CHECKPOINT = Path("/home/sagemaker-user/git/apholo-egnn/model.safetensors")
 _ESM_REPR_LAYER = 36
 
 # Architecture of the published VN-EGNN model trained with ESM-2 3B.
@@ -65,26 +60,28 @@ class VNEGNNPredictor:
         # confidence: [K]     rank descending: confidence.argmax() gives the top prediction
     """
 
-    def __init__(self, device: str = "cpu"):
+    def __init__(self, device: str | None = None):
         """
         Args:
             device: Device for both VNEGNN and ESM-2 3B ("cpu", "cuda", "cuda:1", …).
+                    Defaults to "cuda" if a GPU is available, otherwise "cpu".
         """
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = torch.device(device)
         self._esm_device = torch.device(device)
+        logger.info("Using device: %s", self.device)
 
-        # TODO: replace with hf_hub_download once uploaded to HuggingFace
-        # checkpoint_path = hf_hub_download(repo_id=_HF_REPO_ID, filename=_HF_FILENAME)
-        checkpoint_path = _LOCAL_CHECKPOINT
-        if not checkpoint_path.exists():
-            raise FileNotFoundError(
-                f"Model checkpoint not found: {checkpoint_path}. "
-                "Download it from HuggingFace or place it at the expected path."
-            )
+        checkpoint_path = download_from_pretrained("owkin/apholo-egnn")
+        logger.debug("Loading VNEGNN checkpoint from %s", checkpoint_path)
         model = VNEGNN(**_VNEGNN_KWARGS)
         state_dict = load_file(checkpoint_path, device="cpu")
         model.load_state_dict(state_dict)
         self.model = model.eval().to(self.device)
+        logger.debug(
+            "VNEGNN model ready (%d parameters)",
+            sum(p.numel() for p in model.parameters()),
+        )
 
         # ESM-2 3B is loaded lazily on the first predict() call
         self._esm_model: Any = None
@@ -95,6 +92,7 @@ class VNEGNNPredictor:
             return
         import esm as esm_lib
 
+        logger.info("Loading ESM-2 3B model onto %s", self._esm_device)
         esm_model, alphabet = esm_lib.pretrained.esm2_t36_3B_UR50D()
         self._esm_model = esm_model.eval().to(self._esm_device)
         self._esm_alphabet = alphabet
@@ -102,6 +100,9 @@ class VNEGNNPredictor:
     def _compute_esm(self, sequence: str) -> np.ndarray:
         """Return ESM-2 3B per-residue embeddings, shape [N, 2560]."""
         self._ensure_esm_loaded()
+        logger.debug(
+            "Computing ESM-2 embeddings for sequence of length %d", len(sequence)
+        )
         batch_converter = self._esm_alphabet.get_batch_converter()
         _, _, tokens = batch_converter([("protein", sequence)])
         tokens = tokens.to(self._esm_device)
@@ -151,6 +152,12 @@ class VNEGNNPredictor:
         sequence = "".join(seq1(r) for r in res_names)
         esm_embeddings = self._compute_esm(sequence)
 
+        logger.debug(
+            "Building graph (virtual_nodes=%d, max_neighbours=%d, dist_cutoff=%.1f Å)",
+            num_virtual_nodes,
+            max_neighbours,
+            dist_cutoff,
+        )
         graph = build_graph(
             res_coords=res_coords,
             esm_embeddings=esm_embeddings,
@@ -165,6 +172,7 @@ class VNEGNNPredictor:
         all_conf: list[torch.Tensor] = []
 
         for cycle in range(num_cycles):
+            logger.debug("Inference cycle %d/%d", cycle + 1, num_cycles)
             _, pos_gn, _, conf = self.model(
                 x_atom=batch.x_dict["atom"],
                 pos_atom=batch.pos_dict["atom"] / _SCALING_FACTOR,
@@ -191,4 +199,9 @@ class VNEGNNPredictor:
 
         coords = torch.cat(all_coords, dim=0).numpy()
         confidence = torch.cat(all_conf, dim=0).numpy()
+        logger.info(
+            "Done: %d binding-site predictions, top confidence: %.4f",
+            len(coords),
+            float(confidence.max()),
+        )
         return coords, confidence
