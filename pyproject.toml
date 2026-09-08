@@ -2,12 +2,12 @@
 name = "apholo-egnn"
 version = "0.1.0"
 description = "apholo-EGNN binding-site predictor, inference only"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 dependencies = [
     "torch-geometric==2.5.3",
-    "numpy",
-    "scipy",
+    "numpy>=1.24.0",
+    "scipy>=1.11.0",
     "safetensors>=0.4.0",
     "fair-esm>=2.0.0",
     "biopython>=1.81",
@@ -28,6 +28,9 @@ cu130 = [
 dev = [
     "pytest",
     "pytest-cov",
+    "ruff",
+    "mypy",
+    "pre-commit",
 ]
 
 [tool.uv]
@@ -73,6 +76,21 @@ explicit = true
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_configs = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "torch.*",
+    "torch_geometric.*",
+    "esm.*",
+    "Bio.*",
+    "safetensors.*",
+]
+ignore_missing_imports = true
 
 [[tool.hatch.build.targets.wheel]]
 packages = ["src/apholo_egnn"]

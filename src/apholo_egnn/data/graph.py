@@ -1,4 +1,5 @@
 """Build a heterogeneous protein graph for inference."""
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -11,7 +12,7 @@ from apholo_egnn.utils.grid import sample_fibonacci_grid
 
 
 def _res_to_one_hot(res_names: np.ndarray) -> Tensor:
-    """ Creates a one hot tensor from residue's name"""
+    """Creates a one hot tensor from residue's name"""
     ids = np.array([RES_IDS.get(r, RES_IDS["X"]) for r in res_names.tolist()])
     return F.one_hot(torch.from_numpy(ids), num_classes=len(RES_IDS)).float()
 
@@ -26,6 +27,7 @@ def build_graph(
 ) -> HeteroData:
     """
     Construct the heterogeneous protein graph consumed by VNEGNN.
+    The global nodes (virtual nodes) are initialized on the surface of the protein.
 
     Args:
         res_coords:        [N, 3] alpha-carbon coordinates in Angstroms.
@@ -42,17 +44,33 @@ def build_graph(
     N = len(res_coords)
     K = num_virtual_nodes
 
+    if N == 0:
+        raise ValueError(
+            "res_coords is empty, no valid residues to build a graph from."
+        )
+    if res_coords.shape != (N, 3):
+        raise ValueError(f"res_coords must have shape (N, 3), got {res_coords.shape}.")
+    if esm_embeddings.shape[0] != N:
+        raise ValueError(
+            f"esm_embeddings length ({esm_embeddings.shape[0]}) does not match "
+            f"res_coords length ({N})."
+        )
+    if num_virtual_nodes < 1:
+        raise ValueError(f"num_virtual_nodes must be >= 1, got {num_virtual_nodes}.")
+    if dist_cutoff <= 0:
+        raise ValueError(f"dist_cutoff must be > 0, got {dist_cutoff}.")
+
     coords_t = torch.from_numpy(np.ascontiguousarray(res_coords, dtype=np.float32))
-    esm_t    = torch.from_numpy(np.ascontiguousarray(esm_embeddings, dtype=np.float32))
+    esm_t = torch.from_numpy(np.ascontiguousarray(esm_embeddings, dtype=np.float32))
 
     # Atom features: [one-hot residue | ESM embedding]
     one_hot = _res_to_one_hot(np.asarray(res_names))  # [N, 21]
-    x_atom  = torch.cat([one_hot, esm_t], dim=-1)     # [N, 21+D]
+    x_atom = torch.cat([one_hot, esm_t], dim=-1)  # [N, 21+D]
 
     # Global-node features: mean ESM, zero-padded to match atom dim
     esm_mean = esm_embeddings.astype(np.float32).mean(axis=0)
     x_gn = torch.from_numpy(np.stack([esm_mean] * K))  # [K, D]
-    pad  = x_atom.shape[-1] - x_gn.shape[-1]
+    pad = x_atom.shape[-1] - x_gn.shape[-1]
     if pad > 0:
         x_gn = F.pad(x_gn, (0, pad))  # [K, 21+D]
 
@@ -68,18 +86,18 @@ def build_graph(
 
     # Initial virtual-node positions (Fibonacci sphere)
     centroid = coords_t.mean(dim=0)
-    radius   = (coords_t - centroid).norm(dim=1).max().unsqueeze(0)
-    pos_gn   = sample_fibonacci_grid(centroid, radius, K, random_rotations=False)
+    radius = (coords_t - centroid).norm(dim=1).max().unsqueeze(0)
+    pos_gn = sample_fibonacci_grid(centroid, radius, K, random_rotations=False)
 
     data = HeteroData()
-    data["atom"].x                               = x_atom
-    data["atom"].pos                             = coords_t
-    data["global_node"].x                        = x_gn
-    data["global_node"].pos                      = pos_gn
-    data["atom",         "to", "atom"       ].edge_index = edge_aa
-    data["atom",         "to", "global_node"].edge_index = edge_ag
-    data["global_node",  "to", "atom"       ].edge_index = edge_ga
-    data.centroid = centroid
-    data.radius   = radius
+    data["atom"].x = x_atom
+    data["atom"].pos = coords_t
+    data["global_node"].x = x_gn  # global node = virtual node
+    data["global_node"].pos = pos_gn
+    data["atom", "to", "atom"].edge_index = edge_aa
+    data["atom", "to", "global_node"].edge_index = edge_ag
+    data["global_node", "to", "atom"].edge_index = edge_ga
+    data.centroid = centroid  # centroid of the protein
+    data.radius = radius
 
     return data

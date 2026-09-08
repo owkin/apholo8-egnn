@@ -1,9 +1,6 @@
-from typing import Tuple, Union
-
 import torch
-import torch.nn as nn
 import torch_geometric
-from torch import Tensor
+from torch import Tensor, nn
 from torch_geometric.nn import (
     Aggregation,
     MeanAggregation,
@@ -12,13 +9,28 @@ from torch_geometric.nn import (
 )
 from torch_geometric.typing import Adj, OptPairTensor, OptTensor
 
-from apholo_egnn.model.utils import CoorsNorm
+
+class CoorsNorm(nn.Module):
+    """https://github.com/lucidrains/egnn-pytorch"""
+
+    def __init__(self, eps=1e-8, scale_init=1.0):
+        super().__init__()
+        self.eps = eps
+        scale = torch.zeros(1).fill_(scale_init)
+        self.scale = nn.Parameter(scale)
+
+    def forward(self, coors):
+        norm = coors.norm(dim=-1, keepdim=True)
+        normed_coors = coors / norm.clamp(min=self.eps)
+        return normed_coors * self.scale
 
 
 class EGNNLayer(MessagePassing):
-    """E(n)-equivariant Message Passing Layer
-    Is currently not compatible with the Pytorch Geometric HeteroConv class, because
-    are returning here only the updated target nodes features.
+    """E(n)-equivariant Message Passing Layer.
+
+    Not compatible with torch_geometric.nn.HeteroConv: forward() requires pos
+    as input and returns (features, pos) as output, whereas HeteroConv only
+    passes features and expects a single tensor back.
     """
 
     def __init__(
@@ -103,8 +115,8 @@ class EGNNLayer(MessagePassing):
 
     def forward(
         self,
-        x: Union[Tensor, OptPairTensor],
-        pos: Union[Tensor, OptPairTensor],
+        x: Tensor | OptPairTensor,
+        pos: Tensor | OptPairTensor,
         edge_index: Adj,
         edge_weight: OptTensor = None,
         edge_attr: OptPairTensor = None,
@@ -132,9 +144,8 @@ class EGNNLayer(MessagePassing):
         """Create messages"""
         pos_dir = pos_i - pos_j
         dist = torch.norm(pos_dir, dim=-1, keepdim=True)
-        input = [self.node_norm(x_i), self.node_norm(x_j), dist]
-        input = torch.cat(input, dim=-1)
-        node_message = self.message_net(input)
+        msg_input = torch.cat([self.node_norm(x_i), self.node_norm(x_j), dist], dim=-1)
+        node_message = self.message_net(msg_input)
         pos_message = self.coors_norm(pos_dir) * self.pos_net(node_message)
         if edge_weight is not None:
             node_message = node_message * edge_weight.unsqueeze(-1)
@@ -144,11 +155,11 @@ class EGNNLayer(MessagePassing):
 
     def aggregate(
         self,
-        inputs: Tuple[Tensor, Tensor],
+        inputs: tuple[Tensor, Tensor],
         index: Tensor,
-        ptr: Tensor = None,
-        dim_size: int = None,
-    ) -> Tensor:
+        ptr: Tensor | None = None,
+        dim_size: int | None = None,
+    ) -> tuple[Tensor, Tensor]:
         node_message, pos_message = inputs
         agg_node_message = self.node_aggr(node_message, index, ptr, dim_size)
         agg_pos_message = self.cord_aggr(pos_message, index, ptr, dim_size)
@@ -156,9 +167,9 @@ class EGNNLayer(MessagePassing):
 
     def update(
         self,
-        message: Tuple[Tensor, Tensor],
-        x: Union[Tensor, OptPairTensor],
-        pos: Union[Tensor, OptPairTensor],
+        message: tuple[Tensor, Tensor],
+        x: Tensor | OptPairTensor,
+        pos: Tensor | OptPairTensor,
     ):
         node_message, pos_message = message
         x_, pos_ = (x, pos) if isinstance(x, Tensor) else (x[1], pos[1])
@@ -168,61 +179,10 @@ class EGNNLayer(MessagePassing):
         return x_new, pos_new
 
 
-class EGNN(nn.Module):
-    def __init__(
-        self,
-        node_features,
-        edge_features,
-        hidden_features,
-        out_features,
-        num_layers,
-        act,
-        dropout=0.5,
-        node_aggr=SumAggregation,
-        cord_aggr=MeanAggregation,
-        residual=True,
-        update_coords=True,
-        norm_coords=True,
-        norm_coors_scale_init=1e-2,
-        norm_feats=True,
-        initialization_gain=1,
-    ):
-        super().__init__()
-        self.residual = residual
-        self.layers = nn.ModuleList()
-
-        for _ in range(num_layers):
-            layer = EGNNLayer(
-                node_features,
-                edge_features,
-                hidden_features,
-                out_features,
-                act,
-                dropout=dropout,
-                node_aggr=node_aggr,
-                cord_aggr=cord_aggr,
-                residual=residual,
-                update_coords=update_coords,
-                norm_coords=norm_coords,
-                norm_coors_scale_init=norm_coors_scale_init,
-                norm_feats=norm_feats,
-                initialization_gain=initialization_gain,
-            )
-            self.layers.append(layer)
-
-    def forward(self, x, pos, edge_index):
-        for layer in self.layers:
-            x, pos = layer(
-                x=x,
-                edge_index=edge_index,
-                pos=pos,
-            )
-
-        return x, pos
-
-
 class VNEGNN(nn.Module):
-    """E(n)-equivariant Message Passing Network"""
+    """Virtual Node E(n)-equivariant Message Passing Network
+    https://github.com/ml-jku/vnegnn
+    """
 
     def __init__(
         self,
@@ -390,17 +350,17 @@ class VNEGNN(nn.Module):
 
         for i in range(self.num_layers):
             layer = self.shared_layer if self.weight_share else self.layers[i]
-            x_atom, pos_atom = layer["atom_to_atom"](
+            x_atom, pos_atom = layer["atom_to_atom"](  # type: ignore[index]
                 x=(x_atom, x_atom),
                 edge_index=edge_index_atom_atom,
                 pos=(pos_atom, pos_atom),
             )
-            x_global_node, pos_global_node = layer["atom_to_global_node"](
+            x_global_node, pos_global_node = layer["atom_to_global_node"](  # type: ignore[index]
                 x=(x_atom, x_global_node),
                 edge_index=edge_index_atom_global_node,
                 pos=(pos_atom, pos_global_node),
             )
-            x_atom, pos_atom = layer["global_node_to_atom"](
+            x_atom, pos_atom = layer["global_node_to_atom"](  # type: ignore[index]
                 x=(x_global_node, x_atom),
                 edge_index=edge_index_global_node_atom,
                 pos=(pos_global_node, pos_atom),
@@ -410,71 +370,3 @@ class VNEGNN(nn.Module):
         confidence_out = self.confidence_mlp(x_global_node)
 
         return x_atom, pos_global_node, x_global_node, confidence_out
-
-
-class EGNNSegOnly(nn.Module):
-    """Atom-only EGNN with a segmentation head — no virtual nodes, no confidence head."""
-
-    def __init__(
-        self,
-        input_features,
-        node_features,
-        edge_features,
-        hidden_features,
-        out_features,
-        num_layers,
-        act,
-        dropout=0.1,
-        node_aggr=SumAggregation,
-        cord_aggr=MeanAggregation,
-        residual=True,
-        norm_coords=True,
-        norm_coors_scale_init=1e-2,
-        norm_feats=True,
-        initialization_gain=1,
-        weight_share=False,
-    ):
-        super().__init__()
-        self.num_layers = num_layers
-        self.weight_share = weight_share
-
-        layer_kwargs = dict(
-            node_features=node_features,
-            edge_features=edge_features,
-            hidden_features=hidden_features,
-            out_features=out_features,
-            act=act,
-            dropout=dropout,
-            node_aggr=node_aggr,
-            cord_aggr=cord_aggr,
-            residual=residual,
-            update_coords=False,
-            norm_coords=norm_coords,
-            norm_coors_scale_init=norm_coors_scale_init,
-            norm_feats=norm_feats,
-            initialization_gain=initialization_gain,
-            return_pos=False,
-        )
-
-        if weight_share:
-            self.shared_layer = EGNNLayer(**layer_kwargs)
-        else:
-            self.layers = nn.ModuleList([EGNNLayer(**layer_kwargs) for _ in range(num_layers)])
-
-        self.input_mapping = nn.Linear(input_features, node_features)
-
-        self.head = nn.Sequential(
-            nn.Linear(out_features, out_features),
-            nn.Dropout(dropout),
-            act(),
-            nn.Linear(out_features, 1),
-        )
-
-    def forward(self, x_atom: Tensor, pos_atom: Tensor, edge_index_atom_atom: Tensor) -> Tensor:
-        x_atom = self.input_mapping(x_atom)
-
-        for i in range(self.num_layers):
-            layer = self.shared_layer if self.weight_share else self.layers[i]
-            x_atom = layer(x=x_atom, pos=pos_atom, edge_index=edge_index_atom_atom)
-
-        return self.head(x_atom)
