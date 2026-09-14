@@ -27,7 +27,7 @@ cpu = [
     "torch-cluster==1.6.3",
 ]
 
-cu130 = [
+gpu = [
     "torch==2.11.*",
     "torch-cluster==1.6.3",
 ]
@@ -44,19 +44,19 @@ dev = [
 conflicts = [
     [
         { extra = "cpu" },
-        { extra = "cu130" },
+        { extra = "gpu" },
     ],
 ]
 
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", extra = "cpu" },
-    { index = "pytorch-cu130", extra = "cu130" },
+    { index = "pytorch-gpu", extra = "gpu" },
 ]
 
 torch-cluster = [
     { index = "pyg-cpu", extra = "cpu" },
-    { index = "pyg-cu130", extra = "cu130" },
+    { index = "pyg-gpu", extra = "gpu" },
 ]
 
 [[tool.uv.index]]
@@ -65,7 +65,7 @@ url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
 [[tool.uv.index]]
-name = "pytorch-cu130"
+name = "pytorch-gpu"
 url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
@@ -76,7 +76,7 @@ format = "flat"
 explicit = true
 
 [[tool.uv.index]]
-name = "pyg-cu130"
+name = "pyg-gpu"
 url = "https://data.pyg.org/whl/torch-2.11.0+cu130.html"
 format = "flat"
 explicit = true

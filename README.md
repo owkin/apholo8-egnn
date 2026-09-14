@@ -8,7 +8,7 @@ Binding-site predictor based on VN-EGNN (Virtual Node E(n)-equivariant Graph Neu
 
 Model architecture and training code are from [ml-jku/vnegnn](https://github.com/ml-jku/vnegnn).
 
-You will need at least 11Gb of VRAM to run the inference model.
+You will need at least 15Gb of VRAM to run the inference model on GPU. This can run on a Tesla T4 for example.
 
 ## Usage
 
@@ -54,7 +54,7 @@ structure,vn1_conf,vn1_x,vn1_y,vn1_z,vn1_nms_rank,...
 |---|---|---|
 | `--structure` / `-s` | — | Path to a single `.pdb`, `.cif`, or `.mmcif` file |
 | `--folder` / `-f` | — | Path to a folder of structure files (batch mode) |
-| `--device` / `-d` | `cpu` | Device for VNEGNN and ESM-2 3B (`cpu`, `cuda`, `cuda:1`, …) |
+| `--device` / `-d` | `cuda` | Device for VNEGNN and ESM-2 3B (`cuda`, `cuda:1`, …) |
 | `--output` / `-o` | auto | Output CSV path |
 | `--top` / `-n` | all | Limit to top-N predictions per structure ranked by confidence |
 | `--cycles` | `1` | Number of iterative prediction cycles |

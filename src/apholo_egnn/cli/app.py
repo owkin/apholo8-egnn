@@ -163,8 +163,8 @@ def main():
     parser.add_argument(
         "--device",
         "-d",
-        default="cpu",
-        help="Device for both VNEGNN and ESM-2 3B (default: cpu). Use 'cuda' for GPU.",
+        default="cuda",
+        help="Device for both VNEGNN and ESM-2 3B (default: cuda).",
     )
     parser.add_argument(
         "--output",
