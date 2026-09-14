@@ -1,3 +1,5 @@
+from typing import Union
+
 import torch
 import torch_geometric
 from torch import Tensor, nn
@@ -88,14 +90,10 @@ class EGNNLayer(MessagePassing):
         )
 
         self.node_norm = (
-            torch_geometric.nn.norm.LayerNorm(node_features)
-            if norm_feats
-            else nn.Identity()
+            torch_geometric.nn.norm.LayerNorm(node_features) if norm_feats else nn.Identity()
         )
         self.coors_norm = (
-            CoorsNorm(scale_init=norm_coors_scale_init)
-            if norm_coords
-            else nn.Identity()
+            CoorsNorm(scale_init=norm_coors_scale_init) if norm_coords else nn.Identity()
         )
 
         self.apply(self.init_)
@@ -103,9 +101,7 @@ class EGNNLayer(MessagePassing):
     def init_(self, module):
         if type(module) in {nn.Linear}:
             if self.act is nn.SELU:
-                nn.init.kaiming_normal_(
-                    module.weight, nonlinearity="linear", mode="fan_in"
-                )
+                nn.init.kaiming_normal_(module.weight, nonlinearity="linear", mode="fan_in")
                 nn.init.zeros_(module.bias)
             else:
                 # seems to be needed to keep the network from exploding to NaN with
@@ -115,8 +111,8 @@ class EGNNLayer(MessagePassing):
 
     def forward(
         self,
-        x: Tensor | OptPairTensor,
-        pos: Tensor | OptPairTensor,
+        x: Union[Tensor, OptPairTensor],
+        pos: Union[Tensor, OptPairTensor],
         edge_index: Adj,
         edge_weight: OptTensor = None,
         edge_attr: OptPairTensor = None,
@@ -168,8 +164,8 @@ class EGNNLayer(MessagePassing):
     def update(
         self,
         message: tuple[Tensor, Tensor],
-        x: Tensor | OptPairTensor,
-        pos: Tensor | OptPairTensor,
+        x: Union[Tensor, OptPairTensor],
+        pos: Union[Tensor, OptPairTensor],
     ):
         node_message, pos_message = message
         x_, pos_ = (x, pos) if isinstance(x, Tensor) else (x[1], pos[1])

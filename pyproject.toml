@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "apholo-EGNN binding-site predictor, inference only"
 requires-python = ">=3.12"
 
+[project.scripts]
+apholo-egnn = "apholo_egnn.cli.app:main"
+
 dependencies = [
     "torch-geometric==2.5.3",
     "numpy>=1.24.0",
@@ -73,6 +76,16 @@ name = "pyg-cu130"
 url = "https://data.pyg.org/whl/torch-2.11.0+cu130.html"
 format = "flat"
 explicit = true
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# torch_geometric inspector cannot handle types.UnionType (X | Y syntax)
+"src/apholo_egnn/model/vnegnn.py" = ["UP007"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

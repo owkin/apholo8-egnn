@@ -7,3 +7,93 @@
 Binding-site predictor based on VN-EGNN (Virtual Node E(n)-equivariant Graph Neural Network), inference only.
 
 Model architecture and training code are from [ml-jku/vnegnn](https://github.com/ml-jku/vnegnn).
+
+You will need at least 11Gb of VRAM to run the inference model.
+
+## Usage
+
+### CLI
+
+**Single structure**
+
+```bash
+uv run apholo-egnn --structure protein.pdb
+uv run apholo-egnn --structure protein.cif --device cuda --nms-radius 2.0
+```
+
+Results are written to `<structure stem>_predictions.csv` (override with `--output`).
+Each row is one predicted binding site:
+
+```
+confidence_rank,nms_rank,confidence,x,y,z
+1,1,0.823451,12.345,6.789,-3.210
+2,4,0.761234,13.100,6.500,-3.000
+3,2,0.654321,45.678,23.456,12.345
+```
+
+**Folder (batch mode)**
+
+```bash
+uv run apholo-egnn --folder /path/to/structures/ --device cuda
+```
+
+Results are written to `<folder name>_predictions.csv`. Each row is one structure file, with
+predictions stored in wide format (`vn1_conf`, `vn1_x`, `vn1_y`, `vn1_z`, `vn1_nms_rank`, `vn2_...`).
+Virtual nodes are indexed in descending confidence order (vn1 = highest confidence).
+Failed structures produce an empty row and processing continues.
+
+```
+structure,vn1_conf,vn1_x,vn1_y,vn1_z,vn1_nms_rank,...
+1abc.pdb,0.823451,12.345,6.789,-3.210,1,...
+2xyz.cif,0.761234,45.678,23.456,12.345,1,...
+```
+
+**All flags**
+
+| Flag | Default | Description |
+|---|---|---|
+| `--structure` / `-s` | — | Path to a single `.pdb`, `.cif`, or `.mmcif` file |
+| `--folder` / `-f` | — | Path to a folder of structure files (batch mode) |
+| `--device` / `-d` | `cpu` | Device for VNEGNN and ESM-2 3B (`cpu`, `cuda`, `cuda:1`, …) |
+| `--output` / `-o` | auto | Output CSV path |
+| `--top` / `-n` | all | Limit to top-N predictions per structure ranked by confidence |
+| `--cycles` | `1` | Number of iterative prediction cycles |
+| `--virtual-nodes` | `8` | Candidate binding sites per cycle |
+| `--nms-radius` | `2.0` | NMS minimum separation radius in Å |
+
+`--structure` and `--folder` are mutually exclusive; one is required.
+
+NMS is a greedy reordering, not a filter: the highest-confidence site is always picked first,
+then each next pick must be ≥ `--nms-radius` Å from all already-chosen sites.
+If no candidate satisfies the constraint, the algorithm falls back to the next best by confidence —
+so every prediction appears in both orderings and the global maximum is preserved.
+
+### Python API
+
+```python
+from apholo_egnn.predictor import VNEGNNPredictor
+from apholo_egnn.utils.nms import nms_order
+import numpy as np
+
+predictor = VNEGNNPredictor(device="cuda")  # omit device to auto-detect
+
+coords, confidence = predictor.predict(
+    structure_path="protein.pdb",  # or .cif / .mmcif
+    num_cycles=1,
+    num_virtual_nodes=8,
+)
+# coords:     np.ndarray [K, 3]  — binding-site positions (Å), sorted by descending confidence
+# confidence: np.ndarray [K]     — confidence scores, descending
+
+# NMS reordering ("with NMS" order) — returns a permutation of [0..K-1]
+nms_perm = nms_order(coords, confidence, radius=2.0)
+
+print("Without NMS (by confidence):")
+for rank, (coord, conf) in enumerate(zip(coords, confidence), 1):
+    print(f"  {rank}  conf={conf:.4f}  xyz=({coord[0]:.2f}, {coord[1]:.2f}, {coord[2]:.2f})")
+
+print("With NMS:")
+for nms_rank, idx in enumerate(nms_perm, 1):
+    coord, conf = coords[idx], confidence[idx]
+    print(f"  {nms_rank}  conf={conf:.4f}  xyz=({coord[0]:.2f}, {coord[1]:.2f}, {coord[2]:.2f})")
+```
