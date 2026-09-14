@@ -1,11 +1,12 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "apholo-egnn"
 version = "0.1.0"
 description = "apholo-EGNN binding-site predictor, inference only"
 requires-python = ">=3.12"
-
-[project.scripts]
-apholo-egnn = "apholo_egnn.cli.app:main"
 
 dependencies = [
     "torch-geometric==2.5.3",
@@ -16,6 +17,9 @@ dependencies = [
     "biopython>=1.81",
     "huggingface-hub>=1.30.0",
 ]
+
+[project.scripts]
+apholo-egnn = "apholo_egnn.cli.app:main"
 
 [project.optional-dependencies]
 cpu = [
@@ -109,5 +113,5 @@ module = [
 ]
 ignore_missing_imports = true
 
-[[tool.hatch.build.targets.wheel]]
+[tool.hatch.build.targets.wheel]
 packages = ["src/apholo_egnn"]
