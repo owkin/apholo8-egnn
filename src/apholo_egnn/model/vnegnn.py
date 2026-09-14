@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 import torch
 import torch_geometric
@@ -153,8 +153,8 @@ class EGNNLayer(MessagePassing):
         self,
         inputs: tuple[Tensor, Tensor],
         index: Tensor,
-        ptr: Tensor | None = None,
-        dim_size: int | None = None,
+        ptr: Optional[Tensor] = None,
+        dim_size: Optional[int] = None,
     ) -> tuple[Tensor, Tensor]:
         node_message, pos_message = inputs
         agg_node_message = self.node_aggr(node_message, index, ptr, dim_size)

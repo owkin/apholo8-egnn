@@ -2,13 +2,12 @@ import numpy as np
 
 
 def nms_order(coords: np.ndarray, confidence: np.ndarray, radius: float) -> list[int]:
-    """Order candidates by confidence with NMS-based spatial repulsion.
+    """Order candidates by confidence with NMS-based spatial repulsion (non maxima suppression).
 
     Picks the highest-confidence candidate, then each next pick must be at
     least *radius* Å from every already-chosen candidate. If no remaining
     candidate satisfies the constraint, fall back to the next best by
-    confidence — so nothing is ever dropped and the global maximum is
-    preserved.
+    confidence.
 
     Parameters
     ----------
