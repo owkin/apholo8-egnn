@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 _STRUCTURE_EXTENSIONS = {".pdb", ".cif", ".mmcif"}
 
 
+def _fmt_site(conf: float, coord: np.ndarray) -> list:
+    return [f"{conf:.6f}", f"{coord[0]:.3f}", f"{coord[1]:.3f}", f"{coord[2]:.3f}"]
+
+
 def _rank_predictions(
     coords: np.ndarray,
     confidence: np.ndarray,
@@ -60,16 +64,7 @@ def _run_single(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
         writer = csv.writer(f)
         writer.writerow(["confidence_rank", "nms_rank", "confidence", "x", "y", "z"])
         for conf_rank, (coord, conf, nr) in enumerate(zip(coords, confidence, nms_rank), 1):
-            writer.writerow(
-                [
-                    conf_rank,
-                    nr,
-                    f"{conf:.6f}",
-                    f"{coord[0]:.3f}",
-                    f"{coord[1]:.3f}",
-                    f"{coord[2]:.3f}",
-                ]
-            )
+            writer.writerow([conf_rank, nr, *_fmt_site(conf, coord)])
 
     logger.info(
         "Predictions written to %s  (%d total, NMS radius %.1f Å)",
@@ -81,7 +76,9 @@ def _run_single(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
 
 def _run_folder(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
     structure_files = sorted(
-        p for p in args.folder.iterdir() if p.suffix.lower() in _STRUCTURE_EXTENSIONS
+        p
+        for p in args.folder.rglob("*")
+        if p.is_file() and p.suffix.lower() in _STRUCTURE_EXTENSIONS
     )
     if not structure_files:
         logger.error("No .pdb / .cif / .mmcif files found in %s", args.folder)
@@ -93,9 +90,9 @@ def _run_folder(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
     if args.top is not None:
         k = min(k, args.top)
 
-    header = ["structure"]
-    for n in range(1, k + 1):
-        header += [f"vn{n}_conf", f"vn{n}_x", f"vn{n}_y", f"vn{n}_z", f"vn{n}_nms_rank"]
+    header = ["structure"] + [
+        f"vn{n}_{field}" for n in range(1, k + 1) for field in ("conf", "x", "y", "z", "nms_rank")
+    ]
 
     n_ok = 0
     n_err = 0
@@ -104,7 +101,7 @@ def _run_folder(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
         writer.writerow(header)
 
         for struct_path in structure_files:
-            logger.info("Processing %s ...", struct_path.name)
+            logger.info("Processing %s ...", str(struct_path.relative_to(args.folder)))
             try:
                 coords, confidence = predictor.predict(
                     structure_path=struct_path,
@@ -114,19 +111,13 @@ def _run_folder(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
                 coords, confidence, nms_rank = _rank_predictions(
                     coords, confidence, args.nms_radius, args.top
                 )
-                row: list = [struct_path.name]
+                row = [str(struct_path.relative_to(args.folder))]
                 for coord, conf, nr in zip(coords, confidence, nms_rank):
-                    row += [
-                        f"{conf:.6f}",
-                        f"{coord[0]:.3f}",
-                        f"{coord[1]:.3f}",
-                        f"{coord[2]:.3f}",
-                        nr,
-                    ]
+                    row += [*_fmt_site(conf, coord), nr]
                 n_ok += 1
             except Exception as exc:
                 logger.warning("  Failed: %s", exc)
-                row = [struct_path.name] + [""] * (k * 5)
+                row = [str(struct_path.relative_to(args.folder))] + [""] * (len(header) - 1)
                 n_err += 1
 
             writer.writerow(row)
@@ -170,7 +161,6 @@ def main():
         "--output",
         "-o",
         type=Path,
-        default=None,
         help="Output CSV path (default: <structure stem>_predictions.csv or "
         "<folder name>_predictions.csv).",
     )

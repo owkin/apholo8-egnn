@@ -34,7 +34,7 @@ def download_from_pretrained(
     except LocalEntryNotFoundError as e:
         raise FileNotFoundError(
             f"'{filename}' not found in repo '{repo_id}{rev}'"
-            " — not in local cache and network access is disabled."
+            " - not in local cache and network access is disabled."
         ) from e
     except HfHubHTTPError as e:
         if e.response is not None and e.response.status_code in (401, 403):

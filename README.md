@@ -34,7 +34,7 @@ confidence_rank,nms_rank,confidence,x,y,z
 **Folder (batch mode)**
 
 ```bash
-uv run apholo-egnn --folder /path/to/structures/ --device cuda
+uv run apholo-egnn --folder /path/to/structures/
 ```
 
 Results are written to `<folder name>_predictions.csv`. Each row is one structure file, with
@@ -52,8 +52,8 @@ structure,vn1_conf,vn1_x,vn1_y,vn1_z,vn1_nms_rank,...
 
 | Flag | Default | Description |
 |---|---|---|
-| `--structure` / `-s` | — | Path to a single `.pdb`, `.cif`, or `.mmcif` file |
-| `--folder` / `-f` | — | Path to a folder of structure files (batch mode) |
+| `--structure` / `-s` | required | Path to a single `.pdb`, `.cif`, or `.mmcif` file |
+| `--folder` / `-f` | required | Path to a folder of structure files (batch mode) |
 | `--device` / `-d` | `cuda` | Device for VNEGNN and ESM-2 3B (`cuda`, `cuda:1`, …) |
 | `--output` / `-o` | auto | Output CSV path |
 | `--top` / `-n` | all | Limit to top-N predictions per structure ranked by confidence |
@@ -65,7 +65,7 @@ structure,vn1_conf,vn1_x,vn1_y,vn1_z,vn1_nms_rank,...
 
 NMS is a greedy reordering, not a filter: the highest-confidence site is always picked first,
 then each next pick must be ≥ `--nms-radius` Å from all already-chosen sites.
-If no candidate satisfies the constraint, the algorithm falls back to the next best by confidence —
+If no candidate satisfies the constraint, the algorithm falls back to the next best by confidence,
 so every prediction appears in both orderings and the global maximum is preserved.
 
 ### Python API
@@ -82,10 +82,10 @@ coords, confidence = predictor.predict(
     num_cycles=1,
     num_virtual_nodes=8,
 )
-# coords:     np.ndarray [K, 3]  — binding-site positions (Å), sorted by descending confidence
-# confidence: np.ndarray [K]     — confidence scores, descending
+# coords:     np.ndarray [K, 3]  binding-site positions (Å), sorted by descending confidence
+# confidence: np.ndarray [K]     confidence scores, descending
 
-# NMS reordering ("with NMS" order) — returns a permutation of [0..K-1]
+# NMS reordering ("with NMS" order): returns a permutation of [0..K-1]
 nms_perm = nms_order(coords, confidence, radius=2.0)
 
 print("Without NMS (by confidence):")
