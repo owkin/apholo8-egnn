@@ -33,14 +33,15 @@ def download_from_pretrained(
         )
     except LocalEntryNotFoundError as e:
         raise FileNotFoundError(
-            f"'{filename}' not found in repo '{repo_id}{rev}' — not in local cache and network access is disabled."
+            f"'{filename}' not found in repo '{repo_id}{rev}'"
+            " - not in local cache and network access is disabled."
         ) from e
     except HfHubHTTPError as e:
         if e.response is not None and e.response.status_code in (401, 403):
             raise PermissionError(
                 f"Authentication failed for repo '{repo_id}'. "
                 "Set a valid token via the HF_TOKEN environment variable "
-                "or run `huggingface-cli login`."
+                "or run `hf auth login`."
             ) from e
         if e.response is not None and e.response.status_code == 404:
             raise FileNotFoundError(

@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "apholo-egnn"
 version = "0.1.0"
@@ -14,13 +18,16 @@ dependencies = [
     "huggingface-hub>=1.30.0",
 ]
 
+[project.scripts]
+apholo-egnn = "apholo_egnn.cli.app:main"
+
 [project.optional-dependencies]
 cpu = [
     "torch==2.11.*",
     "torch-cluster==1.6.3",
 ]
 
-cu130 = [
+gpu = [
     "torch==2.11.*",
     "torch-cluster==1.6.3",
 ]
@@ -37,19 +44,19 @@ dev = [
 conflicts = [
     [
         { extra = "cpu" },
-        { extra = "cu130" },
+        { extra = "gpu" },
     ],
 ]
 
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", extra = "cpu" },
-    { index = "pytorch-cu130", extra = "cu130" },
+    { index = "pytorch-gpu", extra = "gpu" },
 ]
 
 torch-cluster = [
     { index = "pyg-cpu", extra = "cpu" },
-    { index = "pyg-cu130", extra = "cu130" },
+    { index = "pyg-gpu", extra = "gpu" },
 ]
 
 [[tool.uv.index]]
@@ -58,7 +65,7 @@ url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
 [[tool.uv.index]]
-name = "pytorch-cu130"
+name = "pytorch-gpu"
 url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
@@ -69,10 +76,20 @@ format = "flat"
 explicit = true
 
 [[tool.uv.index]]
-name = "pyg-cu130"
+name = "pyg-gpu"
 url = "https://data.pyg.org/whl/torch-2.11.0+cu130.html"
 format = "flat"
 explicit = true
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# torch_geometric inspector cannot handle types.UnionType (X | Y syntax)
+"src/apholo_egnn/model/vnegnn.py" = ["UP"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -89,8 +106,12 @@ module = [
     "esm.*",
     "Bio.*",
     "safetensors.*",
+    "numpy",
+    "numpy.*",
+    "huggingface_hub",
+    "huggingface_hub.*",
 ]
 ignore_missing_imports = true
 
-[[tool.hatch.build.targets.wheel]]
+[tool.hatch.build.targets.wheel]
 packages = ["src/apholo_egnn"]

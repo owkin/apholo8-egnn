@@ -45,9 +45,7 @@ def build_graph(
     K = num_virtual_nodes
 
     if N == 0:
-        raise ValueError(
-            "res_coords is empty, no valid residues to build a graph from."
-        )
+        raise ValueError("res_coords is empty, no valid residues to build a graph from.")
     if res_coords.shape != (N, 3):
         raise ValueError(f"res_coords must have shape (N, 3), got {res_coords.shape}.")
     if esm_embeddings.shape[0] != N:

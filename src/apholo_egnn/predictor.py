@@ -100,9 +100,7 @@ class VNEGNNPredictor:
     def _compute_esm(self, sequence: str) -> np.ndarray:
         """Return ESM-2 3B per-residue embeddings, shape [N, 2560]."""
         self._ensure_esm_loaded()
-        logger.debug(
-            "Computing ESM-2 embeddings for sequence of length %d", len(sequence)
-        )
+        logger.debug("Computing ESM-2 embeddings for sequence of length %d", len(sequence))
         batch_converter = self._esm_alphabet.get_batch_converter()
         _, _, tokens = batch_converter([("protein", sequence)])
         tokens = tokens.to(self._esm_device)
@@ -110,7 +108,7 @@ class VNEGNNPredictor:
             out = self._esm_model(tokens, repr_layers=[_ESM_REPR_LAYER])
         # Remove BOS and EOS tokens → [N, 2560]
         emb = out["representations"][_ESM_REPR_LAYER][0, 1 : len(sequence) + 1]
-        return emb.cpu().numpy()
+        return emb.float().cpu().numpy()
 
     @torch.no_grad()
     def predict(
@@ -138,16 +136,13 @@ class VNEGNNPredictor:
             dist_cutoff:       Radius in Å for atom-atom edges (default: 10.0).
 
         Returns:
-            coords:     np.ndarray [K, 3]: predicted binding-site coordinates.
-            confidence: np.ndarray [K]: confidence score per prediction.
-                        K = num_virtual_nodes × num_cycles.
-                        Sort descending by confidence to rank candidates.
+            coords:     np.ndarray [K, 3]: predicted binding-site coordinates,
+                        sorted by descending confidence. K = num_virtual_nodes × num_cycles.
+            confidence: np.ndarray [K]: confidence score per prediction, descending.
         """
         res_coords, res_names = parse_structure(structure_path)
         if len(res_coords) == 0:
-            raise ValueError(
-                f"No standard residues with CA atoms found in {structure_path}"
-            )
+            raise ValueError(f"No standard residues with CA atoms found in {structure_path}")
 
         sequence = "".join(seq1(r) for r in res_names)
         esm_embeddings = self._compute_esm(sequence)
@@ -179,12 +174,8 @@ class VNEGNNPredictor:
                 x_global_node=batch.x_dict["global_node"],
                 pos_global_node=batch.pos_dict["global_node"] / _SCALING_FACTOR,
                 edge_index_atom_atom=batch.edge_index_dict[("atom", "to", "atom")],
-                edge_index_atom_global_node=batch.edge_index_dict[
-                    ("atom", "to", "global_node")
-                ],
-                edge_index_global_node_atom=batch.edge_index_dict[
-                    ("global_node", "to", "atom")
-                ],
+                edge_index_atom_global_node=batch.edge_index_dict[("atom", "to", "global_node")],
+                edge_index_global_node_atom=batch.edge_index_dict[("global_node", "to", "atom")],
             )
             all_coords.append((pos_gn * _SCALING_FACTOR).cpu())
             all_conf.append(conf.squeeze(-1).cpu())
@@ -199,9 +190,13 @@ class VNEGNNPredictor:
 
         coords = torch.cat(all_coords, dim=0).numpy()
         confidence = torch.cat(all_conf, dim=0).numpy()
+
+        order = np.argsort(confidence)[::-1]
+        coords, confidence = coords[order], confidence[order]
+
         logger.info(
             "Done: %d binding-site predictions, top confidence: %.4f",
             len(coords),
-            float(confidence.max()),
+            float(confidence[0]),
         )
         return coords, confidence
