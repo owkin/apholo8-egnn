@@ -7,9 +7,20 @@
 Binding-site predictor based on VN-EGNN (Virtual Node E(n)-equivariant Graph Neural Network), inference only.
 
 Model architecture and training code are from [ml-jku/vnegnn](https://github.com/ml-jku/vnegnn).
-The weights are automatically downloaded from [Hugging face](https://huggingface.co/owkin/apholo8-egnn). You will need at least 15Gb of VRAM to run the inference model on GPU. This can run on a Tesla T4 for example.
+The weights are automatically downloaded from [Hugging face](https://huggingface.co/owkin/apholo8-egnn).
+You will need at least 15Gb of VRAM to run the inference model on GPU. This can run on a Tesla T4 for example.
 
 ## Usage
+
+### Install
+
+```bash
+# With GPU
+uv sync --extra gpu
+
+# With CPU
+uv sync --extra cpu
+```
 
 ### CLI
 
@@ -17,7 +28,6 @@ The weights are automatically downloaded from [Hugging face](https://huggingface
 
 ```bash
 uv run apholo-egnn --structure protein.pdb
-uv run apholo-egnn --structure protein.cif --device cuda --nms-radius 2.0
 ```
 
 Results are written to `<structure stem>_predictions.csv` (override with `--output`).
