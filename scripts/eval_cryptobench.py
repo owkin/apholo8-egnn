@@ -50,22 +50,20 @@ import argparse
 import csv
 import json
 import logging
-import re
 import sys
 import zlib
 from pathlib import Path
 
 import numpy as np
 
+from apholo_egnn.predictor import VNEGNNPredictor
+from apholo_egnn.utils.nms import nms_order
+from apholo_egnn.utils.structure import parse_chains
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
 _NUM_VN = 8
-
-
-def _parse_chains(chains_str: str) -> list[str]:
-    """'G-H' or 'M-O-P' → ['G', 'H'] / ['M', 'O', 'P']."""
-    return [c for c in re.split(r"[-,]+", chains_str.strip()) if c]
 
 
 def _fmt(v: float) -> str:
@@ -83,6 +81,8 @@ def load_test_entries(
     """
     with open(folds_json) as f:
         folds = json.load(f)
+    if "test" not in folds:
+        raise KeyError(f"'test' key not found in {folds_json}; available keys: {list(folds.keys())}")
     test_pdb_ids: set[str] = set(folds["test"])
 
     with open(dataset_json) as f:
@@ -94,7 +94,7 @@ def load_test_entries(
         if pdb_id not in test_pdb_ids:
             continue
         chain_str = holo_entries[0]["apo_chain"]
-        chains = _parse_chains(chain_str)
+        chains = parse_chains(chain_str)
         entry_id = f"{pdb_id}_{chain_str}"
         if entry_id in seen:
             continue
@@ -160,9 +160,6 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    from apholo_egnn.predictor import VNEGNNPredictor
-    from apholo_egnn.utils.nms import nms_order
-
     entries = load_test_entries(args.folds_json, args.dataset_json)
 
     logger.info("Loading model ...")
@@ -191,7 +188,8 @@ def main() -> int:
 
             if args.seed_mode == "paper":
                 digest = zlib.crc32(entry_id.encode()) & 0xFFFFFFFF
-                vn_seed = int((digest + 0x9E3779B9 * 1) & 0xFFFFFFFF)
+                # 0x9E3779B9 is the Fibonacci/golden-ratio hash constant, matching the paper pipeline
+                vn_seed = int((digest + 0x9E3779B9) & 0xFFFFFFFF)
             elif args.seed_mode == "fixed":
                 vn_seed = args.vn_seed
             else:

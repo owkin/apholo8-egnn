@@ -54,22 +54,23 @@ def parse_structure(
     coords = []
     res_names = []
 
-    for model in structure:
-        for chain in model:
-            if chain_set is not None and chain.id not in chain_set:
+    # We only take the primary conformer (model 0); NMR ensembles would otherwise
+    # accumulate residues from every conformer.
+    for chain in structure[0]:
+        if chain_set is not None and chain.id not in chain_set:
+            continue
+        for residue in chain:
+            if residue.id[0] != " ":
                 continue
-            for residue in chain:
-                if residue.id[0] != " ":
-                    continue
-                if "CA" not in residue:
-                    continue
-                try:
-                    seq1(residue.resname)
-                except KeyError:
-                    logger.warning("Skipping non-standard residue: %s", residue.resname)
-                    continue
-                coords.append(residue["CA"].get_coord())
-                res_names.append(residue.resname)
+            if "CA" not in residue:
+                continue
+            try:
+                seq1(residue.resname)
+            except KeyError:
+                logger.warning("Skipping non-standard residue: %s", residue.resname)
+                continue
+            coords.append(residue["CA"].get_coord())
+            res_names.append(residue.resname)
 
     return np.array(coords, dtype=np.float32), np.array(res_names)
 
@@ -89,23 +90,24 @@ def parse_structure_by_chain(
     chain_set = set(chains)
     buckets: dict[str, tuple[list, list]] = {c: ([], []) for c in chains}
 
-    for model in structure:
-        for chain in model:
-            if chain.id not in chain_set:
+    # We only take the primary conformer (model 0); NMR ensembles would otherwise
+    # accumulate residues from every conformer.
+    for chain in structure[0]:
+        if chain.id not in chain_set:
+            continue
+        coords_list, names_list = buckets[chain.id]
+        for residue in chain:
+            if residue.id[0] != " ":
                 continue
-            coords_list, names_list = buckets[chain.id]
-            for residue in chain:
-                if residue.id[0] != " ":
-                    continue
-                if "CA" not in residue:
-                    continue
-                try:
-                    seq1(residue.resname)
-                except KeyError:
-                    logger.warning("Skipping non-standard residue: %s", residue.resname)
-                    continue
-                coords_list.append(residue["CA"].get_coord())
-                names_list.append(residue.resname)
+            if "CA" not in residue:
+                continue
+            try:
+                seq1(residue.resname)
+            except KeyError:
+                logger.warning("Skipping non-standard residue: %s", residue.resname)
+                continue
+            coords_list.append(residue["CA"].get_coord())
+            names_list.append(residue.resname)
 
     result = []
     for chain_id in chains:

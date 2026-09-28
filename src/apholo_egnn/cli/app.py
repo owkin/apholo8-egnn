@@ -208,6 +208,8 @@ def main():
         "When omitted, random rotations are disabled (fully deterministic).",
     )
     args = parser.parse_args()
+    if args.chains is not None and args.folder is not None:
+        parser.error("--chains can only be used with --structure, not --folder")
     if args.chains is not None:
         args.chains = parse_chains(args.chains)
 
@@ -224,7 +226,7 @@ def main():
     if args.folder is not None and not args.folder.is_dir():
         parser.error(f"Not a directory: {args.folder}")
 
-    logger.info(
+    logger.debug(
         "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿\n"
         "⣿⣿⣿⠛⢻⣿⣿⣿⣿⠿⠛⡿⠀⠀⠀⠀⠀⠀⢿⠛⠿⣟⣻⡿⠛⠻⣿⣿⣿⣿\n"
         "⣿⣿⣿⡆⣾⣿⣿⠟⠁⠀⣀⣇⣀⣠⣤⣤⣄⣀⣸⣀⠀⠈⠻⣧⣀⣀⣿⣿⣿⣿\n"
