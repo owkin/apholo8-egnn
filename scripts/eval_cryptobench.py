@@ -4,7 +4,7 @@
 CryptoBench dataset
 -------------------
 Download the dataset JSON files (dataset.json and folds.json) from the
-CryptoBench repository: https://github.com/i-Molecule/CryptoBench
+CryptoBench repository (see the apholo8 paper for the reference).
 
 Download apo structure CIF files from the PDB (https://www.rcsb.org) for
 each PDB ID in the test fold, and place them in a single directory as
