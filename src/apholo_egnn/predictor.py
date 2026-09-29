@@ -16,7 +16,7 @@ from apholo_egnn.data.graph import build_graph
 from apholo_egnn.model.vnegnn import VNEGNN
 from apholo_egnn.utils.grid import sample_fibonacci_grid
 from apholo_egnn.utils.hub import download_from_pretrained
-from apholo_egnn.utils.pdb import parse_structure
+from apholo_egnn.utils.structure import parse_structure, parse_structure_by_chain
 
 logger = logging.getLogger(__name__)
 _ESM_REPR_LAYER = 36
@@ -98,7 +98,7 @@ class VNEGNNPredictor:
         self._esm_alphabet = alphabet
 
     def _compute_esm(self, sequence: str) -> np.ndarray:
-        """Return ESM-2 3B per-residue embeddings, shape [N, 2560]."""
+        """Return ESM-2 3B per-residue embeddings for a single sequence, shape [N, 2560]."""
         self._ensure_esm_loaded()
         logger.debug("Computing ESM-2 embeddings for sequence of length %d", len(sequence))
         batch_converter = self._esm_alphabet.get_batch_converter()
@@ -110,6 +110,24 @@ class VNEGNNPredictor:
         emb = out["representations"][_ESM_REPR_LAYER][0, 1 : len(sequence) + 1]
         return emb.float().cpu().numpy()
 
+    def _compute_esm_per_chain(self, chain_seqs: list[tuple[str, str]]) -> np.ndarray:
+        """Embed each chain independently with ESM-2 3B, return concatenated [N, 2560].
+
+        Each chain is embedded then the per-residue representations are concatenated in chain order.
+        """
+        self._ensure_esm_loaded()
+        batch_converter = self._esm_alphabet.get_batch_converter()
+        parts = []
+        for chain_id, seq in chain_seqs:
+            logger.debug("Computing ESM-2 embeddings for chain %s (length %d)", chain_id, len(seq))
+            _, _, tokens = batch_converter([(chain_id, seq)])
+            tokens = tokens.to(self._esm_device)
+            with torch.no_grad():
+                out = self._esm_model(tokens, repr_layers=[_ESM_REPR_LAYER])
+            emb = out["representations"][_ESM_REPR_LAYER][0, 1 : len(seq) + 1]
+            parts.append(emb.float().cpu().numpy())
+        return np.concatenate(parts, axis=0)
+
     @torch.no_grad()
     def predict(
         self,
@@ -118,6 +136,8 @@ class VNEGNNPredictor:
         num_virtual_nodes: int = 8,
         max_neighbours: int = 10,
         dist_cutoff: float = 10.0,
+        chains: list[str] | None = None,
+        vn_seed: int | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Predict binding-site locations for a protein from a PDB or mmCIF file.
@@ -134,18 +154,37 @@ class VNEGNNPredictor:
             num_virtual_nodes: Candidate binding sites per cycle (default: 8).
             max_neighbours:    Max atom neighbours in the radius graph (default: 10).
             dist_cutoff:       Radius in Å for atom-atom edges (default: 10.0).
+            chains:            If given, only residues from these chain IDs are
+                               used (e.g. ['G', 'H'] for a CryptoBench entry
+                               '1fd4_G-H').
+            vn_seed:           Integer seed for the random Fibonacci-sphere rotation
+                               used to initialise the virtual nodes. When None, the
+                               global torch random state is used as-is. Passing an
+                               explicit integer makes a single run reproducible.
 
         Returns:
             coords:     np.ndarray [K, 3]: predicted binding-site coordinates,
                         sorted by descending confidence. K = num_virtual_nodes × num_cycles.
-            confidence: np.ndarray [K]: confidence score per prediction, descending.
+            confidence: np.ndarray [K]: sigmoid confidence score per prediction,
+                        descending (values in (0, 1)).
         """
-        res_coords, res_names = parse_structure(structure_path)
-        if len(res_coords) == 0:
-            raise ValueError(f"No standard residues with CA atoms found in {structure_path}")
+        if chains is not None:
+            chain_data = parse_structure_by_chain(structure_path, chains)
+            if not chain_data:
+                raise ValueError(f"No standard residues with CA atoms found in {structure_path}")
+            res_coords = np.concatenate([c for _, c, _ in chain_data])
+            res_names = np.concatenate([n for _, _, n in chain_data])
+            chain_seqs = [(cid, "".join(seq1(r) for r in names)) for cid, _, names in chain_data]
+            esm_embeddings = self._compute_esm_per_chain(chain_seqs)
+        else:
+            res_coords, res_names = parse_structure(structure_path)
+            if len(res_coords) == 0:
+                raise ValueError(f"No standard residues with CA atoms found in {structure_path}")
+            sequence = "".join(seq1(r) for r in res_names)
+            esm_embeddings = self._compute_esm(sequence)
 
-        sequence = "".join(seq1(r) for r in res_names)
-        esm_embeddings = self._compute_esm(sequence)
+        if vn_seed is not None:
+            torch.manual_seed(vn_seed)
 
         logger.debug(
             "Building graph (virtual_nodes=%d, max_neighbours=%d, dist_cutoff=%.1f Å)",
@@ -160,6 +199,7 @@ class VNEGNNPredictor:
             num_virtual_nodes=num_virtual_nodes,
             max_neighbours=max_neighbours,
             dist_cutoff=dist_cutoff,
+            random_rotations=(vn_seed is not None),
         )
         batch = Batch.from_data_list([graph]).to(self.device)
 
@@ -178,7 +218,7 @@ class VNEGNNPredictor:
                 edge_index_global_node_atom=batch.edge_index_dict[("global_node", "to", "atom")],
             )
             all_coords.append((pos_gn * _SCALING_FACTOR).cpu())
-            all_conf.append(conf.squeeze(-1).cpu())
+            all_conf.append(torch.sigmoid(conf.squeeze(-1)).cpu())
 
             if cycle < num_cycles - 1:
                 batch["global_node"].pos = sample_fibonacci_grid(

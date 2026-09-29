@@ -14,6 +14,7 @@ import numpy as np
 
 from apholo_egnn.predictor import VNEGNNPredictor
 from apholo_egnn.utils.nms import nms_order
+from apholo_egnn.utils.structure import parse_chains
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,8 @@ def _run_single(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
         structure_path=args.structure,
         num_cycles=args.cycles,
         num_virtual_nodes=args.virtual_nodes,
+        chains=args.chains,
+        vn_seed=args.vn_seed,
     )
     coords, confidence, nms_rank = _rank_predictions(coords, confidence, args.nms_radius, args.top)
 
@@ -107,6 +110,7 @@ def _run_folder(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
                     structure_path=struct_path,
                     num_cycles=args.cycles,
                     num_virtual_nodes=args.virtual_nodes,
+                    vn_seed=args.vn_seed,
                 )
                 coords, confidence, nms_rank = _rank_predictions(
                     coords, confidence, args.nms_radius, args.top
@@ -189,7 +193,25 @@ def main():
         default=2.0,
         help="NMS minimum separation radius in Å (default: 2.0).",
     )
+    parser.add_argument(
+        "--chains",
+        default=None,
+        help="Comma- or hyphen-separated chain IDs to use (single-structure mode only). "
+        "E.g. 'A', 'A,B', or 'G-H'.",
+    )
+    parser.add_argument(
+        "--vn-seed",
+        type=int,
+        default=None,
+        help="Integer seed for virtual-node Fibonacci initialisation. "
+        "When set, random rotations are enabled and results are reproducible. "
+        "When omitted, random rotations are disabled (fully deterministic).",
+    )
     args = parser.parse_args()
+    if args.chains is not None and args.folder is not None:
+        parser.error("--chains can only be used with --structure, not --folder")
+    if args.chains is not None:
+        args.chains = parse_chains(args.chains)
 
     if args.cycles < 1:
         parser.error("--cycles must be >= 1")
@@ -204,7 +226,7 @@ def main():
     if args.folder is not None and not args.folder.is_dir():
         parser.error(f"Not a directory: {args.folder}")
 
-    logger.info(
+    logger.debug(
         "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿\n"
         "⣿⣿⣿⠛⢻⣿⣿⣿⣿⠿⠛⡿⠀⠀⠀⠀⠀⠀⢿⠛⠿⣟⣻⡿⠛⠻⣿⣿⣿⣿\n"
         "⣿⣿⣿⡆⣾⣿⣿⠟⠁⠀⣀⣇⣀⣠⣤⣤⣄⣀⣸⣀⠀⠈⠻⣧⣀⣀⣿⣿⣿⣿\n"

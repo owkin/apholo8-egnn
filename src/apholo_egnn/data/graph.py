@@ -24,6 +24,7 @@ def build_graph(
     num_virtual_nodes: int = 8,
     max_neighbours: int = 10,
     dist_cutoff: float = 10.0,
+    random_rotations: bool = True,
 ) -> HeteroData:
     """
     Construct the heterogeneous protein graph consumed by VNEGNN.
@@ -36,6 +37,10 @@ def build_graph(
         num_virtual_nodes: K virtual nodes placed on a Fibonacci sphere.
         max_neighbours:    maximum atom neighbours in the radius graph.
         dist_cutoff:       radius (Å) for atom-atom edges.
+        random_rotations:  randomly rotate the Fibonacci sphere (default: True,
+                           matching the training pipeline). Pass False for a fully
+                           deterministic graph; call torch.manual_seed() beforehand
+                           if you need reproducibility with random_rotations=True.
 
     Returns:
         HeteroData with node types "atom" and "global_node" and the three
@@ -85,7 +90,7 @@ def build_graph(
     # Initial virtual-node positions (Fibonacci sphere)
     centroid = coords_t.mean(dim=0)
     radius = (coords_t - centroid).norm(dim=1).max().unsqueeze(0)
-    pos_gn = sample_fibonacci_grid(centroid, radius, K, random_rotations=False)
+    pos_gn = sample_fibonacci_grid(centroid, radius, K, random_rotations=random_rotations)
 
     data = HeteroData()
     data["atom"].x = x_atom
