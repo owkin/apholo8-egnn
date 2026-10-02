@@ -8,7 +8,7 @@ from huggingface_hub.errors import HfHubHTTPError, LocalEntryNotFoundError
 
 logger = logging.getLogger(__name__)
 
-HF_REPO_ID = "owkin/apholo-egnn"
+HF_REPO_ID = "owkin/apholo8-egnn"
 HF_FILENAME = "model.safetensors"
 
 

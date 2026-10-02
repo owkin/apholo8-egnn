@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run apholo-egnn inference on the CryptoBench test set.
+"""Run apholo8-egnn inference on the CryptoBench test set.
 
 CryptoBench dataset
 -------------------
@@ -56,9 +56,9 @@ from pathlib import Path
 
 import numpy as np
 
-from apholo_egnn.predictor import VNEGNNPredictor
-from apholo_egnn.utils.nms import nms_order
-from apholo_egnn.utils.structure import parse_chains
+from apholo8_egnn.predictor import VNEGNNPredictor
+from apholo8_egnn.utils.nms import nms_order
+from apholo8_egnn.utils.structure import parse_chains
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -132,8 +132,8 @@ def main() -> int:
         "--output",
         "-o",
         type=Path,
-        default=Path("apholo_egnn_cryptobench_test.csv"),
-        help="Output CSV path (default: apholo_egnn_cryptobench_test.csv).",
+        default=Path("apholo8_egnn_cryptobench_test.csv"),
+        help="Output CSV path (default: apholo8_egnn_cryptobench_test.csv).",
     )
     parser.add_argument(
         "--device",

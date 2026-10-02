@@ -1,6 +1,6 @@
 import numpy as np
 
-from apholo_egnn.utils.nms import nms_order
+from apholo8_egnn.utils.nms import nms_order
 
 
 def test_returns_full_permutation():
