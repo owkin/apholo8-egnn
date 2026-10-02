@@ -1,4 +1,4 @@
-# apholo-EGNN
+# apholo8-EGNN
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 [![Python](https://img.shields.io/badge/Python-%3E%3D3.12-3776AB?logo=python&logoColor=white)](pyproject.toml)
@@ -27,7 +27,7 @@ uv sync --extra cpu
 **Single structure**
 
 ```bash
-uv run apholo-egnn --structure protein.pdb
+uv run apholo8-egnn --structure protein.pdb
 ```
 
 Results are written to `<structure stem>_predictions.csv` (override with `--output`).
@@ -43,7 +43,7 @@ confidence_rank,nms_rank,confidence,x,y,z
 **Folder (batch mode)**
 
 ```bash
-uv run apholo-egnn --folder /path/to/structures/
+uv run apholo8-egnn --folder /path/to/structures/
 ```
 
 Results are written to `<folder name>_predictions.csv`. Each row is one structure file, with
@@ -80,8 +80,8 @@ so every prediction appears in both orderings and the global maximum is preserve
 ### Python API
 
 ```python
-from apholo_egnn.predictor import VNEGNNPredictor
-from apholo_egnn.utils.nms import nms_order
+from apholo8_egnn.predictor import VNEGNNPredictor
+from apholo8_egnn.utils.nms import nms_order
 import numpy as np
 
 predictor = VNEGNNPredictor(device="cuda")  # omit device to auto-detect

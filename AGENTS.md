@@ -2,7 +2,7 @@
 
 ## Project overview
 
-apholo-egnn is an inference-only package that predicts protein binding-site
+apholo8-egnn is an inference-only package that predicts protein binding-site
 locations using a VN-EGNN model with ESM-2 3B embeddings. It reproduces the
 apholo8 paper results on the CryptoBench benchmark.
 
@@ -20,10 +20,10 @@ uv sync --extra cpu
 
 ```bash
 # Single structure
-uv run apholo-egnn --structure protein.pdb --device cuda
+uv run apholo8-egnn --structure protein.pdb --device cuda
 
 # Folder of structures
-uv run apholo-egnn --folder /path/to/structures/ --device cuda
+uv run apholo8-egnn --folder /path/to/structures/ --device cuda
 
 # Reproduce paper results on CryptoBench
 uv run python scripts/eval_cryptobench.py \
@@ -48,13 +48,13 @@ uv run mypy src/
 
 ## Code structure
 
-- `src/apholo_egnn/predictor.py` — `VNEGNNPredictor`: loads checkpoint, runs
+- `src/apholo8_egnn/predictor.py` — `VNEGNNPredictor`: loads checkpoint, runs
   ESM-2 3B + VNEGNN inference, returns binding-site coordinates and confidence scores
-- `src/apholo_egnn/model/vnegnn.py` — VNEGNN architecture (from ml-jku/vnegnn)
-- `src/apholo_egnn/data/graph.py` — builds the heterogeneous protein graph
-- `src/apholo_egnn/utils/structure.py` — PDB/mmCIF parsing via BioPython
-- `src/apholo_egnn/utils/nms.py` — non-maximum suppression for binding sites
-- `src/apholo_egnn/cli/app.py` — CLI entry point
+- `src/apholo8_egnn/model/vnegnn.py` — VNEGNN architecture (from ml-jku/vnegnn)
+- `src/apholo8_egnn/data/graph.py` — builds the heterogeneous protein graph
+- `src/apholo8_egnn/utils/structure.py` — PDB/mmCIF parsing via BioPython
+- `src/apholo8_egnn/utils/nms.py` — non-maximum suppression for binding sites
+- `src/apholo8_egnn/cli/app.py` — CLI entry point
 - `scripts/eval_cryptobench.py` — CryptoBench evaluation script
 
 ## Key conventions

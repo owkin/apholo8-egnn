@@ -7,8 +7,8 @@ from torch import Tensor
 from torch_geometric.data import HeteroData
 from torch_geometric.nn import radius_graph
 
-from apholo_egnn.utils.constants import RES_IDS
-from apholo_egnn.utils.grid import sample_fibonacci_grid
+from apholo8_egnn.utils.constants import RES_IDS
+from apholo8_egnn.utils.grid import sample_fibonacci_grid
 
 
 def _res_to_one_hot(res_names: np.ndarray) -> Tensor:

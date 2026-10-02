@@ -1,8 +1,8 @@
-"""Command-line interface for apholo-EGNN inference.
+"""Command-line interface for apholo8-EGNN inference.
 
 Usage:
-    uv run apholo-egnn --structure protein.pdb
-    uv run apholo-egnn --folder /path/to/structures/ --device cuda
+    uv run apholo8-egnn --structure protein.pdb
+    uv run apholo8-egnn --folder /path/to/structures/ --device cuda
 """
 
 import argparse
@@ -12,9 +12,9 @@ from pathlib import Path
 
 import numpy as np
 
-from apholo_egnn.predictor import VNEGNNPredictor
-from apholo_egnn.utils.nms import nms_order
-from apholo_egnn.utils.structure import parse_chains
+from apholo8_egnn.predictor import VNEGNNPredictor
+from apholo8_egnn.utils.nms import nms_order
+from apholo8_egnn.utils.structure import parse_chains
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +138,7 @@ def _run_folder(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
 def main():
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(
-        description="Predict binding-site locations from a protein structure using apholo-EGNN."
+        description="Predict binding-site locations from a protein structure using apholo8-EGNN."
     )
 
     source = parser.add_mutually_exclusive_group(required=True)

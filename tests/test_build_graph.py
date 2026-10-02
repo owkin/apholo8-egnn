@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from apholo_egnn.data.graph import build_graph
+from apholo8_egnn.data.graph import build_graph
 
 N, D, K = 10, 4, 3
 

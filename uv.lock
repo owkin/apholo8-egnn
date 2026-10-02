@@ -2,18 +2,18 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
-    "python_full_version >= '3.15' and extra != 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu'",
-    "python_full_version < '3.15' and extra != 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu'",
-    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-11-apholo-egnn-cpu' and extra != 'extra-11-apholo-egnn-gpu'",
-    "python_full_version < '3.15' and sys_platform != 'darwin' and extra == 'extra-11-apholo-egnn-cpu' and extra != 'extra-11-apholo-egnn-gpu'",
-    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-11-apholo-egnn-cpu' and extra != 'extra-11-apholo-egnn-gpu'",
-    "python_full_version < '3.15' and sys_platform == 'darwin' and extra == 'extra-11-apholo-egnn-cpu' and extra != 'extra-11-apholo-egnn-gpu'",
-    "python_full_version >= '3.15' and extra != 'extra-11-apholo-egnn-cpu' and extra != 'extra-11-apholo-egnn-gpu'",
-    "python_full_version < '3.15' and extra != 'extra-11-apholo-egnn-cpu' and extra != 'extra-11-apholo-egnn-gpu'",
+    "python_full_version >= '3.15' and extra != 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu'",
+    "python_full_version < '3.15' and extra != 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu'",
+    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-12-apholo8-egnn-cpu' and extra != 'extra-12-apholo8-egnn-gpu'",
+    "python_full_version < '3.15' and sys_platform != 'darwin' and extra == 'extra-12-apholo8-egnn-cpu' and extra != 'extra-12-apholo8-egnn-gpu'",
+    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-12-apholo8-egnn-cpu' and extra != 'extra-12-apholo8-egnn-gpu'",
+    "python_full_version < '3.15' and sys_platform == 'darwin' and extra == 'extra-12-apholo8-egnn-cpu' and extra != 'extra-12-apholo8-egnn-gpu'",
+    "python_full_version >= '3.15' and extra != 'extra-12-apholo8-egnn-cpu' and extra != 'extra-12-apholo8-egnn-gpu'",
+    "python_full_version < '3.15' and extra != 'extra-12-apholo8-egnn-cpu' and extra != 'extra-12-apholo8-egnn-gpu'",
 ]
 conflicts = [[
-    { package = "apholo-egnn", extra = "cpu" },
-    { package = "apholo-egnn", extra = "gpu" },
+    { package = "apholo8-egnn", extra = "cpu" },
+    { package = "apholo8-egnn", extra = "gpu" },
 ]]
 
 [[package]]
@@ -36,7 +36,7 @@ dependencies = [
     { name = "frozenlist" },
     { name = "multidict" },
     { name = "propcache" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
     { name = "yarl" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/58/d9/22ce5786ac0c1653ae8b6c23bded02c1686d11f0dbb45b31ce128e0df985/aiohttp-3.14.3.tar.gz", hash = "sha256:9491196535a88924a60afd5b5f434b5b203b6cc616250878dbdb223a8f7844bc", size = 7971213, upload-time = "2026-07-23T01:57:27.037Z" }
@@ -131,7 +131,7 @@ version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "frozenlist" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/61/62/06741b579156360248d1ec624842ad0edf697050bbaf7c3e46394e106ad1/aiosignal-1.4.0.tar.gz", hash = "sha256:f47eecd9468083c2029cc99945502cb7708b082c232f9aca65da147157b251c7", size = 25007, upload-time = "2025-07-03T22:54:43.528Z" }
 wheels = [
@@ -144,7 +144,7 @@ version = "4.15.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "idna" },
-    { name = "typing-extensions", marker = "python_full_version < '3.15' or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
+    { name = "typing-extensions", marker = "python_full_version < '3.15' or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a9/d2/f4d173e22df740bc37b1db102b386ba719b66e95b0f0d751f556b387e6d2/anyio-4.15.1.tar.gz", hash = "sha256:9f28306018cbd6d329e64a36d58256edff76dd996fe423bc957326e578b82a94", size = 276966, upload-time = "2026-09-05T10:42:39.44Z" }
 wheels = [
@@ -152,7 +152,7 @@ wheels = [
 ]
 
 [[package]]
-name = "apholo-egnn"
+name = "apholo8-egnn"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
@@ -167,10 +167,10 @@ dependencies = [
 
 [package.optional-dependencies]
 cpu = [
-    { name = "torch", version = "2.11.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-11-apholo-egnn-cpu') or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
-    { name = "torch", version = "2.11.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-11-apholo-egnn-cpu') or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
-    { name = "torch-cluster", version = "1.6.3", source = { registry = "https://data.pyg.org/whl/torch-2.11.0+cpu.html" }, marker = "(sys_platform == 'darwin' and extra == 'extra-11-apholo-egnn-cpu') or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
-    { name = "torch-cluster", version = "1.6.3+pt211cpu", source = { registry = "https://data.pyg.org/whl/torch-2.11.0+cpu.html" }, marker = "(sys_platform != 'darwin' and extra == 'extra-11-apholo-egnn-cpu') or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
+    { name = "torch", version = "2.11.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-apholo8-egnn-cpu') or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
+    { name = "torch", version = "2.11.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-apholo8-egnn-cpu') or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
+    { name = "torch-cluster", version = "1.6.3", source = { registry = "https://data.pyg.org/whl/torch-2.11.0+cpu.html" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-apholo8-egnn-cpu') or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
+    { name = "torch-cluster", version = "1.6.3+pt211cpu", source = { registry = "https://data.pyg.org/whl/torch-2.11.0+cpu.html" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-apholo8-egnn-cpu') or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
 ]
 dev = [
     { name = "mypy" },
@@ -197,10 +197,10 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "safetensors", specifier = ">=0.4.0" },
     { name = "scipy", specifier = ">=1.11.0" },
-    { name = "torch", marker = "extra == 'cpu'", specifier = "==2.11.*", index = "https://download.pytorch.org/whl/cpu", conflict = { package = "apholo-egnn", extra = "cpu" } },
-    { name = "torch", marker = "extra == 'gpu'", specifier = "==2.11.*", index = "https://download.pytorch.org/whl/cu130", conflict = { package = "apholo-egnn", extra = "gpu" } },
-    { name = "torch-cluster", marker = "extra == 'cpu'", specifier = "==1.6.3", index = "https://data.pyg.org/whl/torch-2.11.0+cpu.html", conflict = { package = "apholo-egnn", extra = "cpu" } },
-    { name = "torch-cluster", marker = "extra == 'gpu'", specifier = "==1.6.3", index = "https://data.pyg.org/whl/torch-2.11.0+cu130.html", conflict = { package = "apholo-egnn", extra = "gpu" } },
+    { name = "torch", marker = "extra == 'cpu'", specifier = "==2.11.*", index = "https://download.pytorch.org/whl/cpu", conflict = { package = "apholo8-egnn", extra = "cpu" } },
+    { name = "torch", marker = "extra == 'gpu'", specifier = "==2.11.*", index = "https://download.pytorch.org/whl/cu130", conflict = { package = "apholo8-egnn", extra = "gpu" } },
+    { name = "torch-cluster", marker = "extra == 'cpu'", specifier = "==1.6.3", index = "https://data.pyg.org/whl/torch-2.11.0+cpu.html", conflict = { package = "apholo8-egnn", extra = "cpu" } },
+    { name = "torch-cluster", marker = "extra == 'gpu'", specifier = "==1.6.3", index = "https://data.pyg.org/whl/torch-2.11.0+cu130.html", conflict = { package = "apholo8-egnn", extra = "gpu" } },
     { name = "torch-geometric", specifier = "==2.5.3" },
 ]
 provides-extras = ["cpu", "gpu", "dev"]
@@ -861,7 +861,7 @@ dependencies = [
     { name = "click" },
     { name = "filelock" },
     { name = "fsspec" },
-    { name = "hf-xet", marker = "platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64' or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
+    { name = "hf-xet", marker = "platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64' or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
     { name = "httpx" },
     { name = "packaging" },
     { name = "pyyaml" },
@@ -1241,7 +1241,7 @@ version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ast-serialize" },
-    { name = "librt", marker = "platform_python_implementation != 'PyPy' or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
+    { name = "librt", marker = "platform_python_implementation != 'PyPy' or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
     { name = "mypy-extensions" },
     { name = "pathspec" },
     { name = "typing-extensions" },
@@ -1756,7 +1756,7 @@ name = "pytest"
 version = "9.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
     { name = "iniconfig" },
     { name = "packaging" },
     { name = "pluggy" },
@@ -2130,7 +2130,7 @@ resolution-markers = [
 ]
 dependencies = [
     { name = "cuda-bindings", marker = "sys_platform == 'linux'" },
-    { name = "cuda-toolkit", extra = ["cublas", "cudart", "cufft", "cufile", "cupti", "curand", "cusolver", "cusparse", "nvjitlink", "nvrtc", "nvtx"], marker = "(sys_platform == 'linux' and extra == 'extra-11-apholo-egnn-gpu') or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
+    { name = "cuda-toolkit", extra = ["cublas", "cudart", "cufft", "cufile", "cupti", "curand", "cusolver", "cusparse", "nvjitlink", "nvrtc", "nvtx"], marker = "(sys_platform == 'linux' and extra == 'extra-12-apholo8-egnn-gpu') or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
     { name = "filelock" },
     { name = "fsspec" },
     { name = "jinja2" },
@@ -2245,7 +2245,7 @@ name = "tqdm"
 version = "4.70.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-11-apholo-egnn-cpu' and extra == 'extra-11-apholo-egnn-gpu')" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-12-apholo8-egnn-cpu' and extra == 'extra-12-apholo8-egnn-gpu')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/0d/ea/b2a5bd54b28a324dae8211928b2d730b6547500342c7e6c6dea08bd0a485/tqdm-4.70.1.tar.gz", hash = "sha256:cefd0eca11b2a37a3aee776544d4f4ae913f02688135b5556b8788dfa474afc4", size = 171846, upload-time = "2026-09-11T07:25:16.601Z" }
 wheels = [

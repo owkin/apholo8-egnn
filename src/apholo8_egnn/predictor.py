@@ -12,11 +12,11 @@ from torch import nn
 from torch_geometric.data import Batch
 from torch_geometric.nn import MeanAggregation
 
-from apholo_egnn.data.graph import build_graph
-from apholo_egnn.model.vnegnn import VNEGNN
-from apholo_egnn.utils.grid import sample_fibonacci_grid
-from apholo_egnn.utils.hub import download_from_pretrained
-from apholo_egnn.utils.structure import parse_structure, parse_structure_by_chain
+from apholo8_egnn.data.graph import build_graph
+from apholo8_egnn.model.vnegnn import VNEGNN
+from apholo8_egnn.utils.grid import sample_fibonacci_grid
+from apholo8_egnn.utils.hub import download_from_pretrained
+from apholo8_egnn.utils.structure import parse_structure, parse_structure_by_chain
 
 logger = logging.getLogger(__name__)
 _ESM_REPR_LAYER = 36
@@ -72,7 +72,7 @@ class VNEGNNPredictor:
         self._esm_device = torch.device(device)
         logger.info("Using device: %s", self.device)
 
-        checkpoint_path = download_from_pretrained("owkin/apholo-egnn")
+        checkpoint_path = download_from_pretrained("owkin/apholo8-egnn")
         logger.debug("Loading VNEGNN checkpoint from %s", checkpoint_path)
         model = VNEGNN(**_VNEGNN_KWARGS)
         state_dict = load_file(checkpoint_path, device="cpu")

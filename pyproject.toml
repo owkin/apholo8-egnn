@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "apholo-egnn"
+name = "apholo8-egnn"
 version = "0.1.0"
-description = "apholo-EGNN binding-site predictor, inference only"
+description = "apholo8-EGNN binding-site predictor, inference only"
 requires-python = ">=3.12"
 
 dependencies = [
@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-apholo-egnn = "apholo_egnn.cli.app:main"
+apholo8-egnn = "apholo8_egnn.cli.app:main"
 
 [project.optional-dependencies]
 cpu = [
@@ -89,7 +89,7 @@ select = ["E", "F", "UP", "I"]
 
 [tool.ruff.lint.per-file-ignores]
 # torch_geometric inspector cannot handle types.UnionType (X | Y syntax)
-"src/apholo_egnn/model/vnegnn.py" = ["UP"]
+"src/apholo8_egnn/model/vnegnn.py" = ["UP"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -114,4 +114,4 @@ module = [
 ignore_missing_imports = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/apholo_egnn"]
+packages = ["src/apholo8_egnn"]
