@@ -54,13 +54,16 @@ def _run_single(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
     output_path = args.output or args.structure.with_name(args.structure.stem + "_predictions.csv")
 
     logger.info("Running inference on %s ...", args.structure)
-    coords, confidence = predictor.predict(
-        structure_path=args.structure,
-        num_cycles=args.cycles,
-        num_virtual_nodes=args.virtual_nodes,
-        chains=args.chains,
-        vn_seed=args.vn_seed,
-    )
+    try:
+        coords, confidence = predictor.predict(
+            structure_path=args.structure,
+            num_cycles=args.cycles,
+            num_virtual_nodes=args.virtual_nodes,
+            chains=args.chains,
+            vn_seed=args.vn_seed,
+        )
+    except ValueError as exc:
+        raise SystemExit(f"error: {exc}") from None
     coords, confidence, nms_rank = _rank_predictions(coords, confidence, args.nms_radius, args.top)
 
     with output_path.open("w", newline="") as f:

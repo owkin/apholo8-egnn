@@ -59,7 +59,7 @@ uv run mypy src/
 
 ## Key conventions
 
-- Parser dispatches by file extension: `.cif`/`.mmcif` → MMCIFParser, else PDBParser
+- Format detection (`detect_format`): `.cif`/`.mmcif` → mmCIF, `.pdb`/`.ent` → PDB, other extensions are detected from the content; `predict()` reads each file once (`read_structure`) and validates it before ESM-2 runs
 - Chain filtering matches the training pipeline: pass `chains=['A', 'B']` to
   `predict()` to select specific chains; chains are embedded independently with ESM-2
 - Confidence scores are sigmoid-transformed logits, values in (0, 1)
