@@ -10,6 +10,9 @@ Model architecture and training code are from [ml-jku/vnegnn](https://github.com
 The weights are automatically downloaded from [Hugging face](https://huggingface.co/owkin/apholo8-egnn).
 You will need at least 15Gb of VRAM to run the inference model on GPU. This can run on a Tesla T4 for example.
 
+## Credits
+Developed at [Owkin](https://www.owkin.com) by Christian Esposito (Owkin), Laura Dumont (Owkin), Rose Hoste (Owkin), Floriane Montanari (Owkin)
+
 ## Usage
 
 ### Install
