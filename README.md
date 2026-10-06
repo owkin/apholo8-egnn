@@ -10,6 +10,9 @@ Model architecture and training code are from [ml-jku/vnegnn](https://github.com
 The weights are automatically downloaded from [Hugging face](https://huggingface.co/owkin/apholo8-egnn).
 You will need at least 15Gb of VRAM to run the inference model on GPU. This can run on a Tesla T4 for example.
 
+## Credits
+Developed at [Owkin](https://www.owkin.com) by Christian Esposito (Owkin), Laura Dumont (Owkin), Rose Hoste (Owkin), Floriane Montanari (Owkin)
+
 ## Usage
 
 ### Install
@@ -49,7 +52,8 @@ uv run apholo8-egnn --folder /path/to/structures/
 Results are written to `<folder name>_predictions.csv`. Each row is one structure file, with
 predictions stored in wide format (`vn1_conf`, `vn1_x`, `vn1_y`, `vn1_z`, `vn1_nms_rank`, `vn2_...`).
 Virtual nodes are indexed in descending confidence order (vn1 = highest confidence).
-Failed structures produce an empty row and processing continues.
+Invalid files (empty, no atom records, no protein residues) are rejected before ESM-2 runs.
+Failed and invalid structures produce an empty row and processing continues.
 
 ```
 structure,vn1_conf,vn1_x,vn1_y,vn1_z,vn1_nms_rank,...

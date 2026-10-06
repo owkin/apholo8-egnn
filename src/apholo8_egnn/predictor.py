@@ -16,7 +16,12 @@ from apholo8_egnn.data.graph import build_graph
 from apholo8_egnn.model.vnegnn import VNEGNN
 from apholo8_egnn.utils.grid import sample_fibonacci_grid
 from apholo8_egnn.utils.hub import download_from_pretrained
-from apholo8_egnn.utils.structure import parse_structure, parse_structure_by_chain
+from apholo8_egnn.utils.structure import (
+    parse_structure,
+    parse_structure_by_chain,
+    read_structure,
+    validate_content,
+)
 
 logger = logging.getLogger(__name__)
 _ESM_REPR_LAYER = 36
@@ -144,7 +149,8 @@ class VNEGNNPredictor:
 
         Args:
             structure_path:    Path to the protein structure file (.pdb, .cif,
-                               or .mmcif; parser is picked by extension). Only
+                               or .mmcif; format is picked by extension, else
+                               by content). The file is read once. Only
                                ATOM records with a CA atom are used (HETATM
                                and non-standard residues are skipped), matching
                                the training pipeline.
@@ -167,9 +173,19 @@ class VNEGNNPredictor:
                         sorted by descending confidence. K = num_virtual_nodes × num_cycles.
             confidence: np.ndarray [K]: sigmoid confidence score per prediction,
                         descending (values in (0, 1)).
+
+        Raises:
+            ValueError: If the file is missing, unreadable, or not a valid
+                        protein structure (checked before ESM-2 is loaded),
+                        or has no usable residues.
         """
+        content, fmt = read_structure(structure_path)
+        valid, message = validate_content(content, fmt)
+        if not valid:
+            raise ValueError(f"{structure_path}: {message}")
+
         if chains is not None:
-            chain_data = parse_structure_by_chain(structure_path, chains)
+            chain_data = parse_structure_by_chain(content, fmt, chains)
             if not chain_data:
                 raise ValueError(f"No standard residues with CA atoms found in {structure_path}")
             res_coords = np.concatenate([c for _, c, _ in chain_data])
@@ -177,7 +193,7 @@ class VNEGNNPredictor:
             chain_seqs = [(cid, "".join(seq1(r) for r in names)) for cid, _, names in chain_data]
             esm_embeddings = self._compute_esm_per_chain(chain_seqs)
         else:
-            res_coords, res_names = parse_structure(structure_path)
+            res_coords, res_names = parse_structure(content, fmt)
             if len(res_coords) == 0:
                 raise ValueError(f"No standard residues with CA atoms found in {structure_path}")
             sequence = "".join(seq1(r) for r in res_names)
