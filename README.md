@@ -8,7 +8,10 @@ Binding-site predictor based on VN-EGNN (Virtual Node E(n)-equivariant Graph Neu
 
 Model architecture and training code are from [ml-jku/vnegnn](https://github.com/ml-jku/vnegnn).
 The weights are automatically downloaded from [Hugging face](https://huggingface.co/owkin/apholo8-egnn).
-You will need at least 15Gb of VRAM to run the inference model on GPU. This can run on a Tesla T4 for example.
+
+Inference of Cryptobench 1bk2, chain A, 57 residues :
+- on CPU : ~77s, peak RAM 17Gb
+- on GPU (Tesla T4, 15Gb of VRAM) : 74s
 
 ## Credits
 Developed at [Owkin](https://www.owkin.com) by Christian Esposito (Owkin), Laura Dumont (Owkin), Rose Hoste (Owkin), Floriane Montanari (Owkin)
