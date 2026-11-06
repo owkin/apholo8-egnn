@@ -37,10 +37,8 @@ and no longer uses `torch-cluster`.
 |---|---|---|
 | Linux, NVIDIA GPU | CUDA 13.0 (default torch wheel on PyPI for Linux) | `https://data.pyg.org/whl/torch-2.11.0+cu130.html` |
 | Linux, CPU only | CPU (`+cpu` from the PyTorch index) | `https://data.pyg.org/whl/torch-2.11.0+cpu.html` |
-| macOS (Apple silicon) | CPU (default torch wheel on PyPI for macOS) | `https://data.pyg.org/whl/torch-2.11.0+cpu.html` |
 
-The torch build and the pyg-lib index must match. A `cu130` pyg-lib with a `+cpu` torch (or the
-other way round) installs fine but fails at runtime.
+The torch build and the pyg-lib index must match.
 
 #### 2. Install from PyPI (pip or uv pip)
 
@@ -52,10 +50,6 @@ pip install apholo8-egnn \
 # CPU only (Linux): smaller install, no CUDA libraries
 pip install apholo8-egnn \
     --extra-index-url https://download.pytorch.org/whl/cpu \
-    --find-links https://data.pyg.org/whl/torch-2.11.0+cpu.html
-
-# macOS
-pip install apholo8-egnn \
     --find-links https://data.pyg.org/whl/torch-2.11.0+cpu.html
 ```
 
