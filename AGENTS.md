@@ -36,7 +36,8 @@ uv run python scripts/eval_cryptobench.py \
 ## Tests
 
 ```bash
-uv run pytest tests/ -x
+uv sync --extra gpu --extra dev
+uv run pytest tests/
 ```
 
 ## Lint
