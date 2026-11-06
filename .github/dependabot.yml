@@ -1,0 +1,47 @@
+version: 2
+updates:
+  # GitHub Actions workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Python (uv)
+  - package-ecosystem: "uv"
+    cooldown:
+      default-days: 14 # delay any update by 2 weeks
+    directories:
+      - "**/*"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "python"
+    open-pull-requests-limit: 10
+    # Pinned and served from custom CPU/GPU indexes, updated manually
+    ignore:
+      - dependency-name: "torch"
+      - dependency-name: "pyg-lib"
+    groups:
+      python-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
