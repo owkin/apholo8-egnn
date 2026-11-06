@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "apholo8-egnn"
-version = "0.1.0"
+version = "0.2.0"
 description = "apholo8-EGNN binding-site predictor, inference only"
 readme = "README.md"
 requires-python = ">=3.12"
