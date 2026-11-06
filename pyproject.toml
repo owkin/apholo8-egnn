@@ -6,9 +6,12 @@ build-backend = "hatchling.build"
 name = "apholo8-egnn"
 version = "0.1.0"
 description = "apholo8-EGNN binding-site predictor, inference only"
+readme = "README.md"
 requires-python = ">=3.12"
 
 dependencies = [
+    "torch==2.11.*",
+    "pyg-lib>=0.6.0",
     "torch-geometric>=2.8",
     "numpy>=1.24.0",
     "scipy>=1.11.0",
@@ -21,7 +24,7 @@ dependencies = [
 [project.scripts]
 apholo8-egnn = "apholo8_egnn.cli.app:main"
 
-[project.optional-dependencies]
+[dependency-groups]
 cpu = [
     "torch==2.11.*",
     "pyg-lib>=0.6.0",
@@ -43,20 +46,20 @@ dev = [
 [tool.uv]
 conflicts = [
     [
-        { extra = "cpu" },
-        { extra = "gpu" },
+        { group = "cpu" },
+        { group = "gpu" },
     ],
 ]
 
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cpu", extra = "cpu" },
-    { index = "pytorch-gpu", extra = "gpu" },
+    { index = "pytorch-cpu", group = "cpu" },
+    { index = "pytorch-gpu", group = "gpu" },
 ]
 
 pyg-lib = [
-    { index = "pyg-cpu", extra = "cpu" },
-    { index = "pyg-gpu", extra = "gpu" },
+    { index = "pyg-cpu", group = "cpu" },
+    { index = "pyg-gpu", group = "gpu" },
 ]
 
 [[tool.uv.index]]
@@ -79,7 +82,6 @@ explicit = true
 name = "pyg-gpu"
 url = "https://data.pyg.org/whl/torch-2.11.0+cu130.html"
 format = "flat"
-explicit = true
 
 [tool.ruff]
 line-length = 100

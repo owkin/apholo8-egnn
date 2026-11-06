@@ -9,21 +9,24 @@ apholo8 paper results on the CryptoBench benchmark.
 ## Install
 
 ```bash
-# GPU
-uv sync --extra gpu
+# Default (torch and pyg-lib from PyPI defaults / the pyg CUDA 13.0 index)
+uv sync
+
+# GPU (CUDA 13.0 wheels)
+uv sync --group gpu
 
 # CPU only
-uv sync --extra cpu
+uv sync --group cpu
 ```
 
 ## Run inference
 
 ```bash
 # Single structure
-uv run apholo8-egnn --structure protein.pdb --device cuda
+uv run apholo8-egnn --structure protein.pdb
 
 # Folder of structures
-uv run apholo8-egnn --folder /path/to/structures/ --device cuda
+uv run apholo8-egnn --folder /path/to/structures/ --device cuda  # default: auto-detect
 
 # Reproduce paper results on CryptoBench
 uv run python scripts/eval_cryptobench.py \
@@ -36,7 +39,7 @@ uv run python scripts/eval_cryptobench.py \
 ## Tests
 
 ```bash
-uv sync --extra gpu --extra dev
+uv sync --group gpu --group dev
 uv run pytest tests/
 ```
 
@@ -63,6 +66,10 @@ uv run mypy src/
 - Format detection (`detect_format`): `.cif`/`.mmcif` → mmCIF, `.pdb`/`.ent` → PDB, other extensions are detected from the content; `predict()` reads each file once (`read_structure`) and validates it before ESM-2 runs
 - Chain filtering matches the training pipeline: pass `chains=['A', 'B']` to
   `predict()` to select specific chains; chains are embedded independently with ESM-2
+- CLI `--device` defaults to `None`, so `VNEGNNPredictor` picks `cuda` if available, else `cpu`;
+  `scripts/eval_cryptobench.py` keeps `cuda` as its default
+- Dependencies: `torch` and `pyg-lib` are required `[project]` dependencies; `cpu`/`gpu`/`dev`
+  are uv dependency groups (not extras), so use `--group`, not `--extra`
 - Confidence scores are sigmoid-transformed logits, values in (0, 1)
 - Virtual-node seeding: `vn_seed=None` disables random rotations (deterministic);
   passing an integer enables them and makes results reproducible
