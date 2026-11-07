@@ -90,7 +90,10 @@ def _run_folder(predictor: VNEGNNPredictor, args: argparse.Namespace) -> None:
         logger.error("No .pdb / .cif / .mmcif files found in %s", args.folder)
         return
 
-    output_path = args.output or args.folder.with_name(args.folder.name + "_predictions.csv")
+    # Resolve first: "--folder ." has an empty name (with_name() raises) and ".."
+    # would give ".._predictions.csv"; the resolved path has the real folder name.
+    folder = args.folder.resolve()
+    output_path = args.output or folder.with_name(folder.name + "_predictions.csv")
 
     k = args.virtual_nodes * args.cycles
     if args.top is not None:
