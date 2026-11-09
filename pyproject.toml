@@ -25,16 +25,6 @@ dependencies = [
 apholo8-egnn = "apholo8_egnn.cli.app:main"
 
 [dependency-groups]
-cpu = [
-    "torch==2.11.*",
-    "pyg-lib>=0.6.0",
-]
-
-gpu = [
-    "torch==2.11.*",
-    "pyg-lib>=0.6.0",
-]
-
 dev = [
     "pytest",
     "pytest-cov",
@@ -43,45 +33,15 @@ dev = [
     "pre-commit",
 ]
 
-[tool.uv]
-conflicts = [
-    [
-        { group = "cpu" },
-        { group = "gpu" },
-    ],
-]
-
+# pyg-lib is not on PyPI. The CUDA 13.0 build also runs on CPU-only machines.
 [tool.uv.sources]
-torch = [
-    { index = "pytorch-cpu", group = "cpu" },
-    { index = "pytorch-gpu", group = "gpu" },
-]
-
-pyg-lib = [
-    { index = "pyg-cpu", group = "cpu" },
-    { index = "pyg-gpu", group = "gpu" },
-]
+pyg-lib = { index = "pyg" }
 
 [[tool.uv.index]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
-
-[[tool.uv.index]]
-name = "pytorch-gpu"
-url = "https://download.pytorch.org/whl/cu130"
-explicit = true
-
-[[tool.uv.index]]
-name = "pyg-cpu"
-url = "https://data.pyg.org/whl/torch-2.11.0+cpu.html"
-format = "flat"
-explicit = true
-
-[[tool.uv.index]]
-name = "pyg-gpu"
+name = "pyg"
 url = "https://data.pyg.org/whl/torch-2.11.0+cu130.html"
 format = "flat"
+explicit = true
 
 [tool.ruff]
 line-length = 100

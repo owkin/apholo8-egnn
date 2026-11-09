@@ -14,9 +14,6 @@ jobs:
   testing:
     runs-on: ubuntu-latest
     name: testing
-    env:
-      # Keep the cpu group: a plain `uv run` would re-sync to the default CUDA torch
-      UV_NO_SYNC: "1"
     steps:
       - name: Checkout repo
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -30,7 +27,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --group dev --group cpu
+        run: uv sync --group dev
 
       - name: Run tests
         run: uv run pytest
@@ -38,9 +35,6 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     name: linting
-    env:
-      # Keep the cpu group: a plain `uv run` would re-sync to the default CUDA torch
-      UV_NO_SYNC: "1"
     steps:
       - name: Checkout repo
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
@@ -51,7 +45,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --group dev --group cpu
+        run: uv sync --group dev
 
       - name: Run pre-commit checks
         run: uv run pre-commit run --all-files

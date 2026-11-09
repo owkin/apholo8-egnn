@@ -20,65 +20,25 @@ Developed at [Owkin](https://www.owkin.com) by Christian Esposito (Owkin), Laura
 
 ### Install
 
-apholo8-EGNN needs **PyTorch 2.11** and **[pyg-lib](https://github.com/pyg-team/pyg-lib) ≥ 0.6.0**.
-Since PyG 2.8, `radius_graph` (used to build the protein graph) runs on pyg-lib's compiled kernels
-and no longer uses `torch-cluster`.
-
-> [!IMPORTANT]
-> `pyg-lib` is **not published on PyPI**. Its wheels are only on the PyG wheel index
-> ([data.pyg.org](https://data.pyg.org/whl/)), so every `pip install` needs
-> `--find-links` pointing to the index that matches your torch build. A plain
-> `pip install apholo8-egnn` fails with `pyg-lib was not found`.
-> The `pyg-lib` name is unclaimed on PyPI, so always install it from data.pyg.org.
-
-#### 1. Pick your build
-
-| Machine | torch build | PyG wheel index (`--find-links`) |
-|---|---|---|
-| Linux, NVIDIA GPU | CUDA 13.0 (default torch wheel on PyPI for Linux) | `https://data.pyg.org/whl/torch-2.11.0+cu130.html` |
-| Linux, CPU only | CPU (`+cpu` from the PyTorch index) | `https://data.pyg.org/whl/torch-2.11.0+cpu.html` |
-
-The torch build and the pyg-lib index must match.
-
-#### 2. Install from PyPI (pip or uv pip)
+One install works on GPU and CPU machines (Linux). Choose the device at runtime with
+`--device` (default: `cuda` if available, else `cpu`).
 
 ```bash
-# GPU (CUDA 13.0), Linux
-pip install apholo8-egnn \
-    --find-links https://data.pyg.org/whl/torch-2.11.0+cu130.html
-
-# CPU only (Linux): smaller install, no CUDA libraries
-pip install apholo8-egnn \
-    --extra-index-url https://download.pytorch.org/whl/cpu \
-    --find-links https://data.pyg.org/whl/torch-2.11.0+cpu.html
+pip install apholo8-egnn --find-links https://data.pyg.org/whl/torch-2.11.0+cu130.html
 ```
 
-With `uv pip install`, use the same flags. When you pass `--extra-index-url`, also add
-`--index-strategy unsafe-best-match` so uv picks torch from the PyTorch index.
+> [!NOTE]
+> [pyg-lib](https://github.com/pyg-team/pyg-lib) is not on PyPI, so `--find-links` is needed to
+> get it from the PyG wheel index. Use the same flags with `uv pip install`.
 
-#### 2 (alternative). Install from source with uv
-
-The `cpu` and `gpu` dependency groups already point `torch` and `pyg-lib` to the matching PyTorch
-and PyG indexes, so no extra flags are needed. The two groups are mutually exclusive.
+From source:
 
 ```bash
 git clone https://github.com/owkin/apholo8-egnn.git
 cd apholo8-egnn
-
-uv sync --group gpu  # torch+cu130 and pyg-lib cu130
-uv sync --group cpu  # torch+cpu and pyg-lib cpu, no CUDA libraries
-uv sync              # no group: PyPI torch and pyg-lib cu130 (Linux GPU)
-
-# Development (tests, linters, pre-commit)
-uv sync --group cpu --group dev
+uv sync               # add --group dev for tests and linters
+uv run apholo8-egnn --help
 ```
-
-Prefix the commands below with `uv run` when you install from source.
-
-#### 3. Verify the install
-
-```bash
-apholo8-egnn --help
 
 ### CLI
 

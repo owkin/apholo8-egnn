@@ -9,14 +9,7 @@ apholo8 paper results on the CryptoBench benchmark.
 ## Install
 
 ```bash
-# Default (torch and pyg-lib from PyPI defaults / the pyg CUDA 13.0 index)
-uv sync
-
-# GPU (CUDA 13.0 wheels)
-uv sync --group gpu
-
-# CPU only
-uv sync --group cpu
+uv sync  # one install for GPU and CPU; pick the device at runtime with --device
 ```
 
 ## Run inference
@@ -39,7 +32,7 @@ uv run python scripts/eval_cryptobench.py \
 ## Tests
 
 ```bash
-uv sync --group gpu --group dev
+uv sync --group dev
 uv run pytest tests/
 ```
 
@@ -68,8 +61,9 @@ uv run mypy src/
   `predict()` to select specific chains; chains are embedded independently with ESM-2
 - CLI `--device` defaults to `None`, so `VNEGNNPredictor` picks `cuda` if available, else `cpu`;
   `scripts/eval_cryptobench.py` keeps `cuda` as its default
-- Dependencies: `torch` and `pyg-lib` are required `[project]` dependencies; `cpu`/`gpu`/`dev`
-  are uv dependency groups (not extras), so use `--group`, not `--extra`
+- Dependencies: `torch` (PyPI, CUDA 13.0 build) and `pyg-lib` (CUDA 13.0 build from the PyG
+  index) are required `[project]` dependencies and also run on CPU-only machines. There are no
+  cpu/gpu variants; `dev` is a uv dependency group, so use `--group dev`
 - Confidence scores are sigmoid-transformed logits, values in (0, 1)
 - Virtual-node seeding: `vn_seed=None` disables random rotations (deterministic);
   passing an integer enables them and makes results reproducible
