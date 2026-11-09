@@ -62,8 +62,7 @@ uv run mypy src/
 - CLI `--device` defaults to `None`, so `VNEGNNPredictor` picks `cuda` if available, else `cpu`;
   `scripts/eval_cryptobench.py` keeps `cuda` as its default
 - Dependencies: `torch` (PyPI, CUDA 13.0 build) and `pyg-lib` (CUDA 13.0 build from the PyG
-  index) are required `[project]` dependencies and also run on CPU-only machines. There are no
-  cpu/gpu variants; `dev` is a uv dependency group, so use `--group dev`
+  index) are required `[project]` dependencies and also run on CPU-only machines. `dev` is a uv dependency group, so use `--group dev`
 - Confidence scores are sigmoid-transformed logits, values in (0, 1)
 - Virtual-node seeding: `vn_seed=None` disables random rotations (deterministic);
   passing an integer enables them and makes results reproducible
