@@ -27,16 +27,18 @@ One install works on GPU and CPU machines (Linux). Choose the device at runtime 
 pip install apholo8-egnn --find-links https://data.pyg.org/whl/torch-2.11.0+cu130.html
 ```
 
-> [!NOTE]
-> [pyg-lib](https://github.com/pyg-team/pyg-lib) is not on PyPI, so `--find-links` is needed to
-> get it from the PyG wheel index. Use the same flags with `uv pip install`.
+> [!IMPORTANT]
+> [pyg-lib](https://github.com/pyg-team/pyg-lib) is a required dependency (it provides
+> `radius_graph`) but is not published on PyPI. The `--find-links` option above is needed
+> so pip can find its wheel;
+
 
 From source:
 
 ```bash
 git clone https://github.com/owkin/apholo8-egnn.git
 cd apholo8-egnn
-uv sync               # add --group dev for tests and linters
+uv sync
 uv run apholo8-egnn --help
 ```
 
@@ -88,6 +90,8 @@ structure,vn1_conf,vn1_x,vn1_y,vn1_z,vn1_nms_rank,...
 | `--cycles` | `1` | Number of iterative prediction cycles |
 | `--virtual-nodes` | `8` | Candidate binding sites per cycle |
 | `--nms-radius` | `2.0` | NMS minimum separation radius in Å |
+| `--chains` | all | Comma- or hyphen-separated chain IDs; single-structure mode only |
+| `--vn-seed` | unset | Integer seed enabling reproducible random virtual-node rotations |
 
 `--structure` and `--folder` are mutually exclusive; one is required.
 

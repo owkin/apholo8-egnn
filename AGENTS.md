@@ -50,7 +50,7 @@ uv run mypy src/
 - `src/apholo8_egnn/model/vnegnn.py` — VNEGNN architecture (from ml-jku/vnegnn)
 - `src/apholo8_egnn/data/graph.py` — builds the heterogeneous protein graph
 - `src/apholo8_egnn/utils/structure.py` — PDB/mmCIF parsing via BioPython
-- `src/apholo8_egnn/utils/nms.py` — non-maximum suppression for binding sites
+- `src/apholo8_egnn/utils/nms.py` — NMS-based reordering of all binding sites (not filtering)
 - `src/apholo8_egnn/cli/app.py` — CLI entry point
 - `scripts/eval_cryptobench.py` — CryptoBench evaluation script
 

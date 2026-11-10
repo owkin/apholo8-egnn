@@ -11,8 +11,8 @@ requires-python = ">=3.12"
 
 dependencies = [
     "torch==2.11.*",
-    "pyg-lib>=0.6.0",
     "torch-geometric>=2.8",
+    "pyg-lib>=0.6.0",
     "numpy>=1.24.0",
     "scipy>=1.11.0",
     "safetensors>=0.4.0",
@@ -32,8 +32,7 @@ dev = [
     "mypy",
     "pre-commit",
 ]
-
-# pyg-lib is not on PyPI. The CUDA 13.0 build also runs on CPU-only machines.
+# The CUDA 13.0 build also runs on CPU-only machines.
 [tool.uv.sources]
 pyg-lib = { index = "pyg" }
 
