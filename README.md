@@ -9,9 +9,16 @@ Binding-site predictor based on VN-EGNN (Virtual Node E(n)-equivariant Graph Neu
 Model architecture and training code are from [ml-jku/vnegnn](https://github.com/ml-jku/vnegnn).
 The weights are automatically downloaded from [Hugging face](https://huggingface.co/owkin/apholo8-egnn).
 
+## Hardware and performance
+
 Inference of Cryptobench 1bk2, chain A, 57 residues :
-- on CPU : ~77s, peak RAM 17Gb
-- on GPU (Tesla T4, 15Gb of VRAM) : 74s
+
+| Inference device | CPU RAM | GPU VRAM | Inference time (57 residues) |
+|---|---|---|---|
+| CPU | At least 17 GB available | Not required | ~77 s |
+| GPU | At least 19 GB available  | 15 GB available (tested on Tesla T4) | ~74 s |
+
+These figures are based on the 57-residue example above; larger proteins may need more memory.
 
 ## Credits
 Developed at [Owkin](https://www.owkin.com) by Christian Esposito (Owkin), Laura Dumont (Owkin), Rose Hoste (Owkin), Floriane Montanari (Owkin)
@@ -20,12 +27,26 @@ Developed at [Owkin](https://www.owkin.com) by Christian Esposito (Owkin), Laura
 
 ### Install
 
-```bash
-# With GPU
-uv sync --extra gpu
+One install works on GPU and CPU machines (Linux). Choose the device at runtime with
+`--device` (default: `cuda` if available, else `cpu`).
 
-# With CPU
-uv sync --extra cpu
+```bash
+pip install apholo8-egnn --find-links https://data.pyg.org/whl/torch-2.11.0+cu130.html
+```
+
+> [!IMPORTANT]
+> [pyg-lib](https://github.com/pyg-team/pyg-lib) is a required dependency (it provides
+> `radius_graph`) but is not published on PyPI. The `--find-links` option above is needed
+> so pip can find its wheel;
+
+
+From source:
+
+```bash
+git clone https://github.com/owkin/apholo8-egnn.git
+cd apholo8-egnn
+uv sync
+uv run apholo8-egnn --help
 ```
 
 ### CLI
@@ -70,12 +91,14 @@ structure,vn1_conf,vn1_x,vn1_y,vn1_z,vn1_nms_rank,...
 |---|---|---|
 | `--structure` / `-s` | required | Path to a single `.pdb`, `.cif`, or `.mmcif` file |
 | `--folder` / `-f` | required | Path to a folder of structure files (batch mode) |
-| `--device` / `-d` | `cuda` | Device for VNEGNN and ESM-2 3B (`cuda`, `cuda:1`, …) |
+| `--device` / `-d` | auto | Device for VNEGNN and ESM-2 3B (`cpu`, `cuda`, `cuda:1`, …). Defaults to `cuda` if available, else `cpu` |
 | `--output` / `-o` | auto | Output CSV path |
 | `--top` / `-n` | all | Limit to top-N predictions per structure ranked by confidence |
 | `--cycles` | `1` | Number of iterative prediction cycles |
 | `--virtual-nodes` | `8` | Candidate binding sites per cycle |
 | `--nms-radius` | `2.0` | NMS minimum separation radius in Å |
+| `--chains` | all | Comma- or hyphen-separated chain IDs; single-structure mode only |
+| `--vn-seed` | unset | Integer seed enabling reproducible random virtual-node rotations |
 
 `--structure` and `--folder` are mutually exclusive; one is required.
 

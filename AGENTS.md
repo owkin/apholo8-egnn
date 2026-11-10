@@ -9,21 +9,17 @@ apholo8 paper results on the CryptoBench benchmark.
 ## Install
 
 ```bash
-# GPU
-uv sync --extra gpu
-
-# CPU only
-uv sync --extra cpu
+uv sync  # one install for GPU and CPU; pick the device at runtime with --device
 ```
 
 ## Run inference
 
 ```bash
 # Single structure
-uv run apholo8-egnn --structure protein.pdb --device cuda
+uv run apholo8-egnn --structure protein.pdb
 
 # Folder of structures
-uv run apholo8-egnn --folder /path/to/structures/ --device cuda
+uv run apholo8-egnn --folder /path/to/structures/ --device cuda  # default: auto-detect
 
 # Reproduce paper results on CryptoBench
 uv run python scripts/eval_cryptobench.py \
@@ -36,7 +32,7 @@ uv run python scripts/eval_cryptobench.py \
 ## Tests
 
 ```bash
-uv sync --extra gpu --extra dev
+uv sync --group dev
 uv run pytest tests/
 ```
 
@@ -54,7 +50,7 @@ uv run mypy src/
 - `src/apholo8_egnn/model/vnegnn.py` — VNEGNN architecture (from ml-jku/vnegnn)
 - `src/apholo8_egnn/data/graph.py` — builds the heterogeneous protein graph
 - `src/apholo8_egnn/utils/structure.py` — PDB/mmCIF parsing via BioPython
-- `src/apholo8_egnn/utils/nms.py` — non-maximum suppression for binding sites
+- `src/apholo8_egnn/utils/nms.py` — NMS-based reordering of all binding sites (not filtering)
 - `src/apholo8_egnn/cli/app.py` — CLI entry point
 - `scripts/eval_cryptobench.py` — CryptoBench evaluation script
 
@@ -63,6 +59,10 @@ uv run mypy src/
 - Format detection (`detect_format`): `.cif`/`.mmcif` → mmCIF, `.pdb`/`.ent` → PDB, other extensions are detected from the content; `predict()` reads each file once (`read_structure`) and validates it before ESM-2 runs
 - Chain filtering matches the training pipeline: pass `chains=['A', 'B']` to
   `predict()` to select specific chains; chains are embedded independently with ESM-2
+- CLI `--device` defaults to `None`, so `VNEGNNPredictor` picks `cuda` if available, else `cpu`;
+  `scripts/eval_cryptobench.py` keeps `cuda` as its default
+- Dependencies: `torch` (PyPI, CUDA 13.0 build) and `pyg-lib` (CUDA 13.0 build from the PyG
+  index) are required `[project]` dependencies and also run on CPU-only machines. `dev` is a uv dependency group, so use `--group dev`
 - Confidence scores are sigmoid-transformed logits, values in (0, 1)
 - Virtual-node seeding: `vn_seed=None` disables random rotations (deterministic);
   passing an integer enables them and makes results reproducible

@@ -161,8 +161,9 @@ def main():
     parser.add_argument(
         "--device",
         "-d",
-        default="cuda",
-        help="Device for both VNEGNN and ESM-2 3B (default: cuda).",
+        default=None,
+        help="Device for both VNEGNN and ESM-2 3B, e.g. cpu, cuda, cuda:1 "
+        "(default: cuda if available, else cpu).",
     )
     parser.add_argument(
         "--output",

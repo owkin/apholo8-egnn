@@ -6,10 +6,13 @@ build-backend = "hatchling.build"
 name = "apholo8-egnn"
 version = "0.1.0"
 description = "apholo8-EGNN binding-site predictor, inference only"
+readme = "README.md"
 requires-python = ">=3.12"
 
 dependencies = [
+    "torch==2.11.*",
     "torch-geometric>=2.8",
+    "pyg-lib>=0.6.0",
     "numpy>=1.24.0",
     "scipy>=1.11.0",
     "safetensors>=0.4.0",
@@ -21,17 +24,7 @@ dependencies = [
 [project.scripts]
 apholo8-egnn = "apholo8_egnn.cli.app:main"
 
-[project.optional-dependencies]
-cpu = [
-    "torch==2.11.*",
-    "pyg-lib>=0.6.0",
-]
-
-gpu = [
-    "torch==2.11.*",
-    "pyg-lib>=0.6.0",
-]
-
+[dependency-groups]
 dev = [
     "pytest",
     "pytest-cov",
@@ -39,44 +32,12 @@ dev = [
     "mypy",
     "pre-commit",
 ]
-
-[tool.uv]
-conflicts = [
-    [
-        { extra = "cpu" },
-        { extra = "gpu" },
-    ],
-]
-
+# The CUDA 13.0 build also runs on CPU-only machines.
 [tool.uv.sources]
-torch = [
-    { index = "pytorch-cpu", extra = "cpu" },
-    { index = "pytorch-gpu", extra = "gpu" },
-]
-
-pyg-lib = [
-    { index = "pyg-cpu", extra = "cpu" },
-    { index = "pyg-gpu", extra = "gpu" },
-]
+pyg-lib = { index = "pyg" }
 
 [[tool.uv.index]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
-
-[[tool.uv.index]]
-name = "pytorch-gpu"
-url = "https://download.pytorch.org/whl/cu130"
-explicit = true
-
-[[tool.uv.index]]
-name = "pyg-cpu"
-url = "https://data.pyg.org/whl/torch-2.11.0+cpu.html"
-format = "flat"
-explicit = true
-
-[[tool.uv.index]]
-name = "pyg-gpu"
+name = "pyg"
 url = "https://data.pyg.org/whl/torch-2.11.0+cu130.html"
 format = "flat"
 explicit = true
